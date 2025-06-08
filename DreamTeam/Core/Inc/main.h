@@ -75,6 +75,8 @@ void Error_Handler(void);
 #define m1_derecha_GPIO_Port GPIOB
 #define sensor_frontal_Pin GPIO_PIN_6
 #define sensor_frontal_GPIO_Port GPIOC
+#define sensor_linea_Pin GPIO_PIN_7
+#define sensor_linea_GPIO_Port GPIOC
 #define V_izquierda_Pin GPIO_PIN_8
 #define V_izquierda_GPIO_Port GPIOC
 #define V_derecha_Pin GPIO_PIN_9
