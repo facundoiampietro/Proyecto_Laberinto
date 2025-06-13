@@ -43,7 +43,8 @@
 #define DERECHA  2
 #define GIRO_180   3
 
-#define margen 550 // adcs
+#define margen_D 550 // adcs
+#define margen_I 550
 
 #define AVANCE     0b01
 #define RETROCESO  0b10
@@ -104,8 +105,8 @@ uint8_t calculo_minimo_peso(uint8_t peso[cant_casilleros],
 		uint8_t pared[cant_casilleros], uint8_t ubicacion);
 void correccion_avanzar(void);
 void avanzar(void);
-void apagar_derecha(void);
 void apagar_izquierda(void);
+void apagar_derecha(void);
 void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
@@ -505,10 +506,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) { // Rutina de antención
 }
 void correccion_avanzar(void) {
 	// corrección para el sensor izquierdo
-	if ((sensor_izq_avg < margen) && (margen < sensor_der_avg)) {
-		apagar_izquierda();  // apagar motor derecho
-	} else if ((margen < sensor_izq_avg) && (sensor_der_avg < margen)) { // avanzar con ambos motores
-		apagar_derecha();
+	if ((sensor_izq_avg < margen_I) && (margen_D < sensor_der_avg)) {
+		apagar_derecha();  // apagar motor derecho
+	} else if ((margen_I < sensor_izq_avg) && (sensor_der_avg < margen_D)) { // avanzar con ambos motores
+		apagar_izquierda();  //apaga motor izquierdo
 	} else {
 		avanzar();
 	}
@@ -524,7 +525,7 @@ void avanzar(void) {
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 }
 
-void apagar_derecha(void) {
+void apagar_izquierda(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
@@ -533,7 +534,7 @@ void apagar_derecha(void) {
 	TIM3->CCR4 = 0; // rueda a velocidad media
 }
 
-void apagar_izquierda(void) {
+void apagar_derecha(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
