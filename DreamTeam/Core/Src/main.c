@@ -665,8 +665,7 @@ void act_pesos(uint8_t pared[cant_casilleros], uint8_t peso[cant_casilleros]) {
 					minimo_peso_vecino = peso[i + 4];
 			}
 
-			if (((pared[i] & 0x04)) == 0
-					&& !(i == 3 || i == 7 || i == 11 || i == 15)) { //ideam mirar el vesino derecha si el bit 2 es 0 y si el numero es distinto a 3 7 11 y 15 PORQ EN ESE CASO NO TIENE VECINO A LA DERECHA (LIMITE DEL MAPA)
+			if (((pared[i] & 0x01)) == 0 && !(i == 3 || i == 7 || i == 11 || i == 15)) { //ideam mirar el vecino derecha si el bit 2 es 0 y si el numero es distinto a 3 7 11 y 15 PORQ EN ESE CASO NO TIENE VECINO A LA DERECHA (LIMITE DEL MAPA)
 				if (peso[i + 1] < minimo_peso_vecino)
 					minimo_peso_vecino = peso[i + 1];
 			}
@@ -676,8 +675,7 @@ void act_pesos(uint8_t pared[cant_casilleros], uint8_t peso[cant_casilleros]) {
 					minimo_peso_vecino = peso[i - 4];
 			}
 
-			if (((pared[i] & 0x01)) == 0
-					&& !(i == 0 || i == 4 || i == 8 || i == 12)) { //ideam al dos
+			if (((pared[i] & 0x04)) == 0 && !(i == 0 || i == 4 || i == 8 || i == 12)) { //ideam al dos
 				if (peso[i - 1] < minimo_peso_vecino)
 					minimo_peso_vecino = peso[i - 1];
 			}
@@ -688,6 +686,29 @@ void act_pesos(uint8_t pared[cant_casilleros], uint8_t peso[cant_casilleros]) {
 }
 
 uint8_t calculo_minimo_peso(uint8_t peso[cant_casilleros], uint8_t pared[cant_casilleros], uint8_t ubicacion);
+	uint8_t minimo_peso = 15;
+	if (peso[ubicacion +4] < minimo_peso) && ((pared[ubicacion] & 0x08)==0) && (ubicacion + 4 < cant_casilleros){
+			minimo_peso = peso[ubicacion +4] ;
+			casilla_n = ubicacion + 4 ;
+	}
+	if (peso[ubicacion +1] < minimo_peso) && ((pared[ubicacion] & 0x01)==0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15){ // el signo de admiracion niega y convierte en booleana ubicacion 
+			minimo_peso = peso[ubicacion +1] ;
+			casilla_n = ubicacion + 1 ;
+	}
+	if (peso[ubicacion -4] < minimo_peso) && ((pared[ubicacion] & 0x02)==0) && (4 <= ubicacion){
+			minimo_peso = peso[ubicacion -4] ;
+			casilla_n = ubicacion - 4 ;
+	
+	}
+	if (peso[ubicacion -1] < minimo_peso) && ((pared[ubicacion] & 0x04)==0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15 ){
+			minimo_peso = peso[ubicacion -1] ;
+			casilla_n = ubicacion - 1 ;
+	}	
+	return casilla_n
+		
+
+
+
 
 /* USER CODE END 4 */
 
