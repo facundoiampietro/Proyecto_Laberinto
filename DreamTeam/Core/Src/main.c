@@ -111,6 +111,10 @@ void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
 bool verificar_sensor(void);
+void prueba0 ();
+void prueba1 ();
+void prueba2 ();
+void prueba3 ();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -187,10 +191,27 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 		/* USER CODE END WHILE */
-		if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET){
-		act_pared(pared, ubicacion, orientacion_actual);
-		act_pesos(pared, peso);
-		}
+		//if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET){
+		//act_pared(pared, ubicacion, orientacion_actual);
+		//act_pesos(pared, peso);
+		//}
+		switch (prueba) {
+		    case 0:
+		        prueba0 ()
+		        break;
+		    case 1:
+		        prueba1()
+		        break;
+		    case 2:
+		        prueba2()
+		        break;
+		    case 3:
+		        prueba3()
+		        break;
+		    default:
+		        
+		        break;
+}
 
 		//	if (!verificar_sensor()) { //cambio de casilla
 		//	ubicacion = act_ubicacion(ubicacion, orientacion_actual);
