@@ -112,8 +112,9 @@ void ejecutarGiro(uint8_t giro);
 bool verificar_sensor(void);
 void prueba_avanzar (void);
 void prueba_giros_y_sensores (void);
-void prueba2 (void);
+void prueba_casilla_n (void);
 void programa_principal (void);
+void prueba_post_relleno (void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -203,7 +204,7 @@ int main(void) {
 		        prueba_giros_y_sensores();
 		        break;
 		    case 2:
-		        prueba2();
+		        prueba_casilla_n();
 		        break;
 		    case 3:
 		        programa_principal();
@@ -498,6 +499,37 @@ void prueba_giros_y_sensores (void) {
 		correccion_avanzar();
 	}
 }
+
+
+void prueba_casilla_n(void) {
+    ubicacion= 5 ; //elegir ubicacion
+    pared[5]= 13  ; //tiene parede en frente, izq y der
+    peso[9] = 3 ;
+    peso[6] =3  ;
+    peso[4] =5  ;
+    peso[1] = 5 ;   //asignarles pesos arbitrarios para ver si cumple con que vaya al menor 
+    casilla_n= calculo_minimo_peso(peso, pared , ubicacion); //deberia dar que tiene que ir a 1
+       
+    //comentar el de arriba o el de abajo
+    ubicacion= 7 ; //elegir ubicacion
+    pared[7]= 1  ; //tiene parede en frente, izq y der
+    peso[11] = 1 ;
+    peso[6] =3  ;
+    peso[3] =3  ; //asignarles pesos arbitrarios para ver si cumple con que vaya al menor 
+    casilla_n= calculo_minimo_peso(peso, pared , ubicacion); //deberia dar que tiene que ir a 11
+
+}
+
+void prueba_post_relleno (void) {
+    ubicacion= 5 ;
+    casilla_n = 1 ;
+    orientacion_n =obtener_orientacion_N(ubicacion,casilla_n); //deberia dar SUR 
+    orientacion_actual= NORTE;
+    giro= obtenerGiro(orientacion_actual, orientacion_n); //deberia dar giro 180  
+    ejecutarGiro(giro); //tendria que girar 180 xD
+}
+
+
 void programa_principal (void) {
 	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
 }
