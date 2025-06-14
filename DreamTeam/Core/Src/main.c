@@ -208,6 +208,8 @@ int main(void) {
 		    case 3:
 		        programa_principal();
 		        break;
+			case 4:	
+				prueba_post_relleno(); 
 		    default:
 		        
 		        break;
