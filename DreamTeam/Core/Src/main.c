@@ -33,30 +33,31 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define NORTE 0 // Direcciones hacia donde puede estar mirando el autito
-#define ESTE  1
-#define SUR   2
-#define OESTE 3
+#define norte 0 // Direcciones hacia donde puede estar mirando el autito
+#define este  1
+#define sur   2
+#define oeste 3
 
-#define ADELANTE 0 // Tipos de giro que puede hacer
-#define IZQUIERDA 1
-#define DERECHA  2
-#define GIRO_180   3
+#define adelante 0 // Tipos de giro que puede hacer
+#define izquierda 1
+#define derecha  2
+#define giro_180   3
 
-#define margen 450 // adcs
+#define margen_D 550 // adcs
+#define margen_I 550
 
-#define AVANCE     0b01
-#define RETROCESO  0b10
-#define FRENO      0b00
+#define avance     0b01
+#define retroceso  0b10
 
 #define v_max 63999
 #define v_media 32000
 
-#define tiempo_giro90 610
+#define tiempo_giro90 615
 #define tiempo_giro180 1100
 #define tiempo_muerto 300
 
 #define cant_casilleros 16
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,13 +71,15 @@ DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim3;
 
-uint8_t ubicacion = 0;    //defino ubicacion (va a ser un numero entre 0 y 15)
-uint8_t orientacion_actual = NORTE;
-uint8_t orientacion_n = NORTE;
+uint8_t ubicacion = 13;    //defino ubicacion (va a ser un numero entre 0 y 15)
+uint8_t orientacion_actual = oeste;
+uint8_t orientacion_n = norte;
 uint8_t casilla_n = 4;   // la casilla a la cual hay q ir
 uint8_t giro;
 uint8_t peso[cant_casilleros];
 uint8_t pared[cant_casilleros];
+uint8_t contador_casillas = 0;
+uint8_t prueba;
 
 /* USER CODE BEGIN PV */
 uint16_t dma_buffer[64];
@@ -95,18 +98,22 @@ static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 uint8_t obtener_orientacion_N(uint8_t casilla_actual, uint8_t casilla_n);
 uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_n);
-uint8_t actualizo_ubicacion(uint8_t ubicacion, uint8_t orientacion_actual);
-void act_pesos(uint8_t pared[cant_casilleros], uint8_t peso[cant_casilleros]);
-uint8_t actualizo_pared(uint8_t pared[cant_casilleros], uint8_t ubicacion, uint8_t orientacion_actual);
-uint8_t calculo_minimo_peso(uint8_t peso[cant_casilleros], uint8_t pared[cant_casilleros], uint8_t ubicacion);
+uint8_t act_ubicacion(uint8_t ubicacion, uint8_t orientacion_actual);
+void act_pesos(uint8_t * pared, uint8_t * peso );
+uint8_t act_pared(uint8_t * pared, uint8_t ubicacion, uint8_t orientacion_actual);
+uint8_t calculo_minimo_peso(uint8_t * peso, uint8_t * pared, uint8_t ubicacion);
 void correccion_avanzar(void);
 void avanzar(void);
-void apagar_derecha(void);
 void apagar_izquierda(void);
+void apagar_derecha(void);
 void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
 bool verificar_sensor(void);
+void prueba_avanzar (void);
+void prueba_giros_y_sensores (void);
+void prueba2 (void);
+void programa_principal (void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -157,7 +164,7 @@ int main(void) {
 	peso[1] = peso[4] = 5;
 	peso[0] = 6;
 
-	//paredes de cada casilla (8=pared en Norte, 4=pared en Este, 2=pared en Sur, 1=pared en Oeste)
+	//paredes de cada casilla (8=pared en norte, 4=pared en este, 2=pared en sur, 1=pared en oeste)
 	pared[0] = 6; //se suma sur y este
 	pared[1] = pared[2] = 2; //solo sur
 	pared[3] = 3;  //se suma sur y oeste
@@ -177,28 +184,48 @@ int main(void) {
 	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 
+	prueba=0;
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 		/* USER CODE END WHILE */
-		ejecutarGiro(GIRO_180);
-		correccion_avanzar();
-		HAL_Delay(1500);
-		avanzar();
-		if (!verificar_sensor()) { //cambio de casilla
-			ubicacion = actualizo_ubicacion(ubicacion, orientacion_actual);
-			//aca estaria el metodo de llenado q me da casilla_n
-			orientacion_n = obtener_orientacion_N(ubicacion, casilla_n);
-			giro = obtenerGiro(orientacion_actual, orientacion_n);
-			orientacion_actual = orientacion_n;  //actualizo la orientacion
-			ejecutarGiro(giro);
-		}
+		//if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET){
+		//act_pared(pared, ubicacion, orientacion_actual);
+		//act_pesos(pared, peso);
+		//}
+		switch (prueba) {
+		    case 0:
+		        prueba_avanzar();
+		        break;
+		    case 1:
+		        prueba_giros_y_sensores();
+		        break;
+		    case 2:
+		        prueba2();
+		        break;
+		    case 3:
+		        programa_principal();
+		        break;
+		    default:
+		        
+		        break;
+}
+
+		//	if (!verificar_sensor()) { //cambio de casilla
+		//	ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+		//aca estaria el metodo de llenado q me da casilla_n
+
+		//		orientacion_n = obtener_orientacion_N(ubicacion, casilla_n);
+		//	giro = obtenerGiro(orientacion_actual, orientacion_n);
+		//	orientacion_actual = orientacion_n;  //act la orientacion
+		//	ejecutarGiro(giro);
+		// }
 
 		//rellenado
-		pared[ubicacion] = actualizo_pared(pared, ubicacion,
-				orientacion_actual);
+		// pared[ubicacion] = act_pared(pared, ubicacion,
+		//	orientacion_actual);
 
 		//faltaria el if de la pared
 
@@ -402,8 +429,8 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB,
-			m0_izquierda_Pin | m1_izquierda_Pin | m0_derecha_Pin
-					| m1_derecha_Pin, GPIO_PIN_RESET);
+	m0_izquierda_Pin | m1_izquierda_Pin | m0_derecha_Pin | m1_derecha_Pin,
+			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : CS_I2C_SPI_Pin */
 	GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
@@ -432,16 +459,56 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+void prueba_avanzar (void) {
+	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
+}
+
+void prueba_giros_y_sensores (void) {
+	correccion_avanzar();
+	if (verificar_sensor()) {
+				ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+			}
+	if (ubicacion == 8) {
+		HAL_Delay(600);
+		ejecutarGiro(izquierda);
+		orientacion_actual = oeste;
+		while ((ubicacion == 8)) {
+			correccion_avanzar();
+			if (verificar_sensor()) {
+				ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+			}
+		}
+	}
+	if (ubicacion == 9) {
+			HAL_Delay(600);
+			ejecutarGiro(derecha);
+			orientacion_actual = norte;
+			while ((ubicacion == 9)) {
+				correccion_avanzar();
+				if (verificar_sensor()) {
+					ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+				}
+			}
+		}
+	if ((ubicacion == 13) && (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET)){
+		ejecutarGiro(giro_180);
+		orientacion_actual = sur;
+		correccion_avanzar();
+	}
+}
+void programa_principal (void) {
+	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
+}
 
 uint8_t obtener_orientacion_N(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
 	if (casilla_n == ubicacion + 1)
-		return OESTE;
+		return oeste;
 	if (casilla_n == ubicacion - 1)
-		return ESTE;
+		return este;
 	if (casilla_n == ubicacion + 4)
-		return NORTE;
+		return norte;
 	if (casilla_n == ubicacion - 4)
-		return SUR;
+		return sur;
 
 	return 100; // Movimiento no válido (no adyacente o fuera del tablero)
 }
@@ -451,18 +518,18 @@ uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_n) { // Calc
 
 	switch (diferencia) {
 	case 0:
-		return ADELANTE;
+		return adelante;
 	case 1:
-		return DERECHA;
+		return derecha;
 	case 2:
-		return GIRO_180;
+		return giro_180;
 	case 3:
-		return IZQUIERDA;
+		return izquierda;
 	default:
 		return 100; // Error
 	}
 }
-uint8_t actualizo_ubicacion(uint8_t ubicacion, uint8_t orientacion_actual) {
+uint8_t act_ubicacion(uint8_t ubicacion, uint8_t orientacion_actual) {
 
 	switch (orientacion_actual) {
 	case 0:
@@ -500,18 +567,14 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) { // Rutina de antención
 }
 void correccion_avanzar(void) {
 	// corrección para el sensor izquierdo
-	if (sensor_izq_avg < margen) {
+	if ((sensor_izq_avg < margen_I) && (margen_D < sensor_der_avg)) {
 		apagar_derecha();  // apagar motor derecho
+	} else if ((margen_I < sensor_izq_avg) && (sensor_der_avg < margen_D)) { // avanzar con ambos motores
+		apagar_izquierda();  //apaga motor izquierdo
 	} else {
-		avanzar();         // avanzar con ambos motores
+		avanzar();
 	}
 
-	// corrección para el sensor derecho
-	if (sensor_der_avg < margen) {
-		apagar_izquierda();  // apagar motor izquierdo
-	} else {
-		avanzar();           // avanzar con ambos motores
-	}
 }
 
 void avanzar(void) {
@@ -519,17 +582,8 @@ void avanzar(void) {
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
-	TIM4->CCR3 = v_media; // rueda a velocidad media (condigurable)
-	TIM4->CCR4 = v_media; // rueda a velocidad media
-}
-
-void apagar_derecha(void) {
-	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
-	TIM4->CCR3 = v_media; // rueda a velocidad media (condigurable)
-	TIM4->CCR4 = 0; // rueda a velocidad media
+	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = v_media; // rueda a velocidad media
 }
 
 void apagar_izquierda(void) {
@@ -537,32 +591,41 @@ void apagar_izquierda(void) {
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
+	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = 0; // rueda a velocidad media
+}
+
+void apagar_derecha(void) {
+	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 	TIM3->CCR3 = 0; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 }
 void ejecutarGiro(uint8_t giro) {
 	switch (giro) {
-	case ADELANTE:
-		setMotorIzquierdo(AVANCE);
-		setMotorDerecho(AVANCE);
+	case adelante:
+		setMotorIzquierdo(avance);
+		setMotorDerecho(avance);
 		HAL_Delay(tiempo_muerto);
 		break;
 
-	case DERECHA:
-		setMotorIzquierdo(AVANCE);
-		setMotorDerecho(RETROCESO);
+	case derecha:
+		setMotorIzquierdo(avance);
+		setMotorDerecho(retroceso);
 		HAL_Delay(tiempo_giro90);
 		break;
 
-	case IZQUIERDA:
-		setMotorIzquierdo(RETROCESO);
-		setMotorDerecho(AVANCE);
+	case izquierda:
+		setMotorIzquierdo(retroceso);
+		setMotorDerecho(avance);
 		HAL_Delay(tiempo_giro90);
 		break;
 
-	case GIRO_180:
-		setMotorIzquierdo(AVANCE);
-		setMotorDerecho(RETROCESO);
+	case giro_180:
+		setMotorIzquierdo(avance);
+		setMotorDerecho(retroceso);
 		HAL_Delay(tiempo_giro180);
 		break;
 
@@ -574,14 +637,14 @@ void setMotorIzquierdo(uint8_t modo) {
 	TIM3->CCR3 = v_media; // rueda a velocidad media
 
 	switch (modo) {
-	case AVANCE:
+	case avance:
 		HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin,
 				GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin,
 				GPIO_PIN_SET);
 		break;
 
-	case RETROCESO:
+	case retroceso:
 		HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin,
 				GPIO_PIN_SET);
 		HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin,
@@ -595,12 +658,12 @@ void setMotorDerecho(uint8_t modo) {
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 
 	switch (modo) {
-	case AVANCE:
+	case avance:
 		HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 		break;
 
-	case RETROCESO:
+	case retroceso:
 		HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
 		break;
@@ -632,21 +695,20 @@ bool verificar_sensor(void) {
 	return pedido;
 }
 
-uint8_t actualizo_pared(uint8_t pared[cant_casilleros], uint8_t ubicacion,
-		uint8_t orientacion_actual) { // ESTE CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
+uint8_t act_pared(uint8_t * pared, uint8_t ubicacion, uint8_t orientacion_actual) { // este CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
 
 	// actualizamos el valor de pared según la orientación
 	switch (orientacion_actual) { //SE PONE 0X08 PORQ ES HEXADECIMAL, SI NO LO PONES ESTA EN OTRA BASE, ME HIZO RE CONFUNDIR
-	case NORTE: // TAMBIEN USO EL |= PARA Q SI DETECTA UNA PARED YA INICIALIZADA NO LA SUME Y ACUMULE UN CARRY , SI NO Q HAGA LA OR
+	case norte: // TAMBIEN USO EL |= PARA Q SI DETECTA UNA PARED YA INICIALIZADA NO LA SUME Y ACUMULE UN CARRY , SI NO Q HAGA LA OR
 		pared[ubicacion] |= 0x08;  // suma 8 (1000 en binario)
 		break;
-	case ESTE:
+	case este:
 		pared[ubicacion] |= 0x04;  // suma 4 (0100 en binario)
 		break;
-	case SUR:
+	case sur:
 		pared[ubicacion] |= 0x02;  // suma 2 (0010 en binario)
 		break;
-	case OESTE:
+	case oeste:
 		pared[ubicacion] |= 0x01;  // suma 1 (0001 en binario)
 		break;
 	default:
@@ -655,39 +717,57 @@ uint8_t actualizo_pared(uint8_t pared[cant_casilleros], uint8_t ubicacion,
 	return pared[ubicacion];  // devolvés el valor actualizado
 }
 
-void act_pesos(uint8_t pared[cant_casilleros], uint8_t peso[cant_casilleros]) {
-	for (int j = 0; j < 16; j++) {
+void act_pesos(uint8_t * pared , uint8_t * peso) {
+	uint8_t minimo_peso_vecino;
+//	for (int j = 0; j < 2; j++) {
 		for (int i = 0; i < cant_casilleros; i++) {
-			uint8_t minimo_peso_vecino = 15;
-
-			if (((pared[i] & 0x08) == 0) && (i + 4 < cant_casilleros)) { //mirar la el vecino de arriba si el bit 3 es 0 y si i es menor a 12 (es decir q no tiene pared superior) PORQUE SI NO NO PUEDE CALCULAR EL VECINO DE ARRIBA PORQ SERIA I+4 Y SI I ES 12 O MAS, I+4 VA A DAR 16 O MAS, Q NO EXISTE
+			minimo_peso_vecino = 100;
+			if (((i + 4 < cant_casilleros) && (pared[i] & 0x08) == 0)) { //mirar la el vecino de arriba si el bit 3 es 0 y si i es menor a 12 (es decir q no tiene pared superior) PORQUE SI NO NO PUEDE CALCULAR EL VECINO DE ARRIBA PORQ SERIA I+4 Y SI I ES 12 O MAS, I+4 VA A DAR 16 O MAS, Q NO EXISTE
 				if (peso[i + 4] < minimo_peso_vecino)
 					minimo_peso_vecino = peso[i + 4];
 			}
 
-			if (((pared[i] & 0x04)) == 0
-					&& !(i == 3 || i == 7 || i == 11 || i == 15)) { //ideam mirar el vesino derecha si el bit 2 es 0 y si el numero es distinto a 3 7 11 y 15 PORQ EN ESE CASO NO TIENE VECINO A LA DERECHA (LIMITE DEL MAPA)
+			if (((!(i == 3 || i == 7 || i == 11 || i == 15)) && (pared[i] & 0x01) == 0)) { //ideam mirar el vecino derecha si el bit 2 es 0 y si el numero es distinto a 3 7 11 y 15 PORQ EN ESE CASO NO TIENE VECINO A LA derecha (LIMITE DEL MAPA)
 				if (peso[i + 1] < minimo_peso_vecino)
 					minimo_peso_vecino = peso[i + 1];
 			}
 
-			if (((pared[i] & 0x02)) == 0 && i >= 4) { //ideam al primero, mira el vecino de abajo en el caso de q i sea mayor o igual a 4
+			if (((i >= 4) && (pared[i] & 0x02) == 0)) { //ideam al primero, mira el vecino de abajo en el caso de q i sea mayor o igual a 4
 				if (peso[i - 4] < minimo_peso_vecino)
 					minimo_peso_vecino = peso[i - 4];
 			}
 
-			if (((pared[i] & 0x01)) == 0
-					&& !(i == 0 || i == 4 || i == 8 || i == 12)) { //ideam al dos
+			if (((pared[i] & 0x04) == 0) && (!(i == 0 || i == 4 || i == 8 || i == 12))) { //ideam al dos
 				if (peso[i - 1] < minimo_peso_vecino)
 					minimo_peso_vecino = peso[i - 1];
 			}
 
 			peso[i] = minimo_peso_vecino + 1;
-		}
+				}
 	}
-}
+//}
 
-uint8_t calculo_minimo_peso(uint8_t peso[cant_casilleros], uint8_t pared[cant_casilleros], uint8_t ubicacion);
+uint8_t calculo_minimo_peso(uint8_t * peso, uint8_t * pared, uint8_t ubicacion) {
+	uint8_t minimo_peso = 15;
+	if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
+		minimo_peso = peso[ubicacion + 4];
+		casilla_n = ubicacion + 4;
+	}
+	if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0)&& (!(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15)))) { // el signo de admiracion niega y convierte en booleana ubicacion
+		minimo_peso = peso[ubicacion + 1];
+		casilla_n = ubicacion + 1;
+	}
+	if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0)
+			&& (4 <= ubicacion))) {
+		minimo_peso = peso[ubicacion - 4];
+		casilla_n = ubicacion - 4;
+	}
+	if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && (!(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12)))) {
+		minimo_peso = peso[ubicacion - 1];
+		casilla_n = ubicacion - 1;
+	}
+	return casilla_n;
+}
 
 /* USER CODE END 4 */
 
