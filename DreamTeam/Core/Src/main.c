@@ -72,8 +72,8 @@ DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim3;
 
-uint8_t ubicacion = 13;    //defino ubicacion (va a ser un numero entre 0 y 15)
-uint8_t orientacion_actual = oeste;
+uint8_t ubicacion = 0;    //defino ubicacion (va a ser un numero entre 0 y 15)
+uint8_t orientacion_actual = norte;
 uint8_t orientacion_futura = norte;
 uint8_t casilla_n = 4;   // la casilla a la cual hay q ir
 uint8_t giro = adelante;
@@ -770,8 +770,8 @@ uint8_t act_pared(uint8_t * pared, uint8_t ubicacion, uint8_t orientacion_actual
 
 void act_pesos(uint8_t * pared , uint8_t * peso) {
 	uint8_t minimo_peso_vecino;
-//	for (int j = 0; j < 2; j++) {
-		for (int i = 0; i < cant_casilleros; i++) {
+	for (int j = 0; j < 4; j++) {
+		for (int i = 0; i < cant_casilleros-1; i++) {
 			minimo_peso_vecino = 100;
 			if (((i + 4 < cant_casilleros) && (pared[i] & 0x08) == 0)) { //mirar la el vecino de arriba si el bit 3 es 0 y si i es menor a 12 (es decir q no tiene pared superior) PORQUE SI NO NO PUEDE CALCULAR EL VECINO DE ARRIBA PORQ SERIA I+4 Y SI I ES 12 O MAS, I+4 VA A DAR 16 O MAS, Q NO EXISTE
 				if (peso[i + 4] < minimo_peso_vecino)
@@ -796,7 +796,7 @@ void act_pesos(uint8_t * pared , uint8_t * peso) {
 			peso[i] = minimo_peso_vecino + 1;
 				}
 	}
-//}
+}
 
 uint8_t calculo_minimo_peso(uint8_t * peso, uint8_t * pared, uint8_t ubicacion) {
 	uint8_t minimo_peso = 15;
