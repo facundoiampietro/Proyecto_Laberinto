@@ -1302,7 +1302,7 @@
   <commands xmi:id="_Z1Jg9kSAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.rename" commandName="Rename" description="Rename the selected item" category="_Z1ISqkSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Jg90SAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.clear.mark" commandName="Clear Mark" description="Clear the mark" category="_Z1ISpUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Jg-ESAEfCQFaraAILMXg" elementId="org.eclipse.ui.project.buildAll" commandName="Build All" description="Build all projects" category="_Z1ISsUSAEfCQFaraAILMXg"/>
-  <commands xmi:id="_Z1Jg-USAEfCQFaraAILMXg" elementId="org.eclipse.cdt.debug.ui.command.reverseStepOver" commandName="Reverse Step Over" description="Perform Reverse Step Over" category="_Z1ISvUSAEfCQFaraAILMXg"/>
+  <commands xmi:id="_Z1Jg-USAEfCQFaraAILMXg" elementId="org.eclipse.cdt.debug.ui.command.reversestepOver" commandName="Reverse Step Over" description="Perform Reverse Step Over" category="_Z1ISvUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Jg-kSAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.cut.line.to.beginning" commandName="Cut to Beginning of Line" description="Cut to the beginning of a line of text" category="_Z1ISpUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Jg-0SAEfCQFaraAILMXg" elementId="org.eclipse.text.quicksearch.commands.quicksearchCommand" commandName="Quick Search" category="_Z1ISrESAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Jg_ESAEfCQFaraAILMXg" elementId="org.eclipse.ui.editors.revisions.rendering.cycle" commandName="Cycle Revision Coloring Mode" description="Cycles through the available coloring modes for revisions" category="_Z1ISpUSAEfCQFaraAILMXg"/>
@@ -1434,7 +1434,7 @@
   <commands xmi:id="_Z1Ku9ESAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.menu.createParserLog" commandName="Create Parser Log File" category="_Z1ISsUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Ku9USAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.findIncrementalReverse" commandName="Incremental Find Reverse" description="Incremental find reverse" category="_Z1ISokSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Ku9kSAEfCQFaraAILMXg" elementId="org.eclipse.epp.mpc.ui.command.importFavoritesWizard" commandName="Import Marketplace Favorites" description="Import another user's Marketplace Favorites List" category="_Z1ISvkSAEfCQFaraAILMXg">
-    <parameters xmi:id="_Z1Ku90SAEfCQFaraAILMXg" elementId="favoritesUrl" name="favoritesUrl"/>
+    <parameters xmi:id="_Z1Ku90SAEfCQFaraAILMXg" elementId="favoritesurl" name="favoritesurl"/>
   </commands>
   <commands xmi:id="_Z1Ku-ESAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.select.addAllMatchesToMultiSelection" commandName="Add all matches to multi-selection" description="Looks for all regions matching the current selection or identifier and adds them to a multi-selection " category="_Z1ISpUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1Ku-USAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.edit.text.c.goto.next.bookmark" commandName="Next Bookmark" description="Goes to the next bookmark of the selected file" category="_Z1ISo0SAEfCQFaraAILMXg"/>
@@ -1566,7 +1566,7 @@
   <commands xmi:id="_Z1LWFESAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.cut" commandName="Cut" description="Cut the selection to the clipboard" category="_Z1ISokSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1LWFUSAEfCQFaraAILMXg" elementId="org.eclipse.ui.project.properties" commandName="Properties" description="Display the properties of the selected item's project " category="_Z1ISsUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1LWFkSAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.edit.text.c.toggleMarkOccurrences" commandName="Toggle Mark Occurrences" description="Toggles mark occurrences in C/C++ editors" category="_Z1ISo0SAEfCQFaraAILMXg"/>
-  <commands xmi:id="_Z1LWF0SAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.edit.text.c.surround.with.quickMenu" commandName="Surround With Quick Menu" description="Shows the Surround With quick menu" category="_Z1ISo0SAEfCQFaraAILMXg"/>
+  <commands xmi:id="_Z1LWF0SAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.edit.text.c.surround.with.quickMenu" commandName="surround With Quick Menu" description="Shows the surround With quick menu" category="_Z1ISo0SAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1LWGESAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.select.columnPrevious" commandName="Select Previous Column" description="Select the previous column" category="_Z1ISpUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1LWGUSAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly" commandName="Show Selected Element Only" description="Show Selected Element Only" category="_Z1ISrUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1LWGkSAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.edit.text.c.uncomment" commandName="Uncomment" description="Uncomments the selected // style comment lines" category="_Z1ISo0SAEfCQFaraAILMXg"/>
@@ -1668,7 +1668,7 @@
   <commands xmi:id="_Z1L9FUSAEfCQFaraAILMXg" elementId="org.eclipse.remote.ui.command.deleteConnection" commandName="Delete Connection" category="_Z1ISvkSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9FkSAEfCQFaraAILMXg" elementId="org.eclipse.team.ui.synchronizeLast" commandName="Repeat last synchronization" description="Repeat the last synchronization" category="_Z1ISoESAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9F0SAEfCQFaraAILMXg" elementId="org.eclipse.debug.ui.commands.StepOver" commandName="Step Over" description="Step over" category="_Z1ISuESAEfCQFaraAILMXg"/>
-  <commands xmi:id="_Z1L9GESAEfCQFaraAILMXg" elementId="org.eclipse.cdt.debug.ui.command.reverseStepInto" commandName="Reverse Step Into" description="Perform Reverse Step Into" category="_Z1ISvUSAEfCQFaraAILMXg"/>
+  <commands xmi:id="_Z1L9GESAEfCQFaraAILMXg" elementId="org.eclipse.cdt.debug.ui.command.reversestepInto" commandName="Reverse Step Into" description="Perform Reverse Step Into" category="_Z1ISvUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9GUSAEfCQFaraAILMXg" elementId="org.eclipse.compare.selectPreviousChange" commandName="Select Previous Change" description="Select Previous Change" category="_Z1ISq0SAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9GkSAEfCQFaraAILMXg" elementId="com.st.stm32cube.ide.mcu.threadx.trx_to_file_command" commandName="Export trace" category="_Z1ISvkSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9G0SAEfCQFaraAILMXg" elementId="org.eclipse.ui.ide.configureColumns" commandName="Configure Columns..." description="Configure the columns in the markers view" category="_Z1ISvkSAEfCQFaraAILMXg"/>
@@ -1700,7 +1700,7 @@
   <commands xmi:id="_Z1L9NESAEfCQFaraAILMXg" elementId="org.eclipse.cdt.ui.edit.text.c.comment" commandName="Comment" description="Turns the selected lines into // style comments" category="_Z1ISo0SAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9NUSAEfCQFaraAILMXg" elementId="org.eclipse.ui.help.installationDialog" commandName="Installation Information" description="Open the installation dialog" category="_Z1ISsESAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9NkSAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.select.multiCaretUp" commandName="Multi caret up" description="Add a new caret/multi selection above the current line, or remove the last caret/multi selection " category="_Z1ISpUSAEfCQFaraAILMXg"/>
-  <commands xmi:id="_Z1L9N0SAEfCQFaraAILMXg" elementId="org.eclipse.debug.ui.commands.ToggleStepFilters" commandName="Use Step Filters" description="Toggles enablement of debug step filters" category="_Z1ISuESAEfCQFaraAILMXg"/>
+  <commands xmi:id="_Z1L9N0SAEfCQFaraAILMXg" elementId="org.eclipse.debug.ui.commands.TogglestepFilters" commandName="Use Step Filters" description="Toggles enablement of debug step filters" category="_Z1ISuESAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9OESAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.goto.lineUp" commandName="Line Up" description="Go up one line of text" category="_Z1ISpUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9OUSAEfCQFaraAILMXg" elementId="org.eclipse.ui.edit.text.goto.windowStart" commandName="Window Start" description="Go to the start of the window" category="_Z1ISpUSAEfCQFaraAILMXg"/>
   <commands xmi:id="_Z1L9OkSAEfCQFaraAILMXg" elementId="org.eclipse.debug.ui.commands.eof" commandName="EOF" description="Send end of file" category="_Z1ISuESAEfCQFaraAILMXg"/>

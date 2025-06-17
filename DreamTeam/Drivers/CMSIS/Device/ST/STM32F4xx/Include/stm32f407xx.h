@@ -332,7 +332,7 @@ typedef struct
   __IO uint32_t MISR;     /*!< DCMI masked interrupt status register,         Address offset: 0x10 */
   __IO uint32_t ICR;      /*!< DCMI interrupt clear register,                 Address offset: 0x14 */
   __IO uint32_t ESCR;     /*!< DCMI embedded synchronization code register,   Address offset: 0x18 */
-  __IO uint32_t ESUR;     /*!< DCMI embedded synchronization unmask register, Address offset: 0x1C */
+  __IO uint32_t Esur;     /*!< DCMI embedded synchronization unmask register, Address offset: 0x1C */
   __IO uint32_t CWSTRTR;  /*!< DCMI crop window start,                        Address offset: 0x20 */
   __IO uint32_t CWSIZER;  /*!< DCMI crop window size,                         Address offset: 0x24 */
   __IO uint32_t DR;       /*!< DCMI data register,                            Address offset: 0x28 */
@@ -5758,19 +5758,19 @@ typedef struct
 #define DCMI_ESCR_FEC_Msk          (0xFFUL << DCMI_ESCR_FEC_Pos)                /*!< 0xFF000000 */
 #define DCMI_ESCR_FEC              DCMI_ESCR_FEC_Msk
 
-/********************  Bits definition for DCMI_ESUR register  ******************/
-#define DCMI_ESUR_FSU_Pos          (0U)
-#define DCMI_ESUR_FSU_Msk          (0xFFUL << DCMI_ESUR_FSU_Pos)                /*!< 0x000000FF */
-#define DCMI_ESUR_FSU              DCMI_ESUR_FSU_Msk
-#define DCMI_ESUR_LSU_Pos          (8U)
-#define DCMI_ESUR_LSU_Msk          (0xFFUL << DCMI_ESUR_LSU_Pos)                /*!< 0x0000FF00 */
-#define DCMI_ESUR_LSU              DCMI_ESUR_LSU_Msk
-#define DCMI_ESUR_LEU_Pos          (16U)
-#define DCMI_ESUR_LEU_Msk          (0xFFUL << DCMI_ESUR_LEU_Pos)                /*!< 0x00FF0000 */
-#define DCMI_ESUR_LEU              DCMI_ESUR_LEU_Msk
-#define DCMI_ESUR_FEU_Pos          (24U)
-#define DCMI_ESUR_FEU_Msk          (0xFFUL << DCMI_ESUR_FEU_Pos)                /*!< 0xFF000000 */
-#define DCMI_ESUR_FEU              DCMI_ESUR_FEU_Msk
+/********************  Bits definition for DCMI_Esur register  ******************/
+#define DCMI_Esur_FSU_Pos          (0U)
+#define DCMI_Esur_FSU_Msk          (0xFFUL << DCMI_Esur_FSU_Pos)                /*!< 0x000000FF */
+#define DCMI_Esur_FSU              DCMI_Esur_FSU_Msk
+#define DCMI_Esur_LSU_Pos          (8U)
+#define DCMI_Esur_LSU_Msk          (0xFFUL << DCMI_Esur_LSU_Pos)                /*!< 0x0000FF00 */
+#define DCMI_Esur_LSU              DCMI_Esur_LSU_Msk
+#define DCMI_Esur_LEU_Pos          (16U)
+#define DCMI_Esur_LEU_Msk          (0xFFUL << DCMI_Esur_LEU_Pos)                /*!< 0x00FF0000 */
+#define DCMI_Esur_LEU              DCMI_Esur_LEU_Msk
+#define DCMI_Esur_FEU_Pos          (24U)
+#define DCMI_Esur_FEU_Msk          (0xFFUL << DCMI_Esur_FEU_Pos)                /*!< 0xFF000000 */
+#define DCMI_Esur_FEU              DCMI_Esur_FEU_Msk
 
 /********************  Bits definition for DCMI_CWSTRT register  ******************/
 #define DCMI_CWSTRT_HOFFCNT_Pos    (0U)
