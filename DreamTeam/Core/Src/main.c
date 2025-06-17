@@ -193,7 +193,6 @@ int main(void) {
 <<<<<<< Updated upstream
 =======
 	prueba = 4; //Aca se elige que programa queremos que se realice
->>>>>>> Stashed changes
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -205,41 +204,7 @@ int main(void) {
 		//act_pesos(pared, peso);
 		//}
 		switch (prueba) {
-<<<<<<< Updated upstream
-		    case 0:
-		        prueba0 ()
-		        break;
-		    case 1:
-		        prueba1()
-		        break;
-		    case 2:
-		        prueba2()
-		        break;
-		    case 3:
-		        prueba3()
-		        break;
-		    default:
-		        
-		        break;
-}
 
-		//	if (!verificar_sensor()) { //cambio de casilla
-		//	ubicacion = act_ubicacion(ubicacion, orientacion_actual);
-		//aca estaria el metodo de llenado q me da casilla_n
-
-		//		orientacion_n = obtener_orientacion_N(ubicacion, casilla_n);
-		//	giro = obtenerGiro(orientacion_actual, orientacion_n);
-		//	orientacion_actual = orientacion_n;  //act la orientacion
-		//	ejecutarGiro(giro);
-		// }
-
-		//rellenado
-		// pared[ubicacion] = act_pared(pared, ubicacion,
-		//	orientacion_actual);
-
-		//faltaria el if de la pared
-
-=======
 		case 0:
 			prueba_avanzar();
 			break;
@@ -707,10 +672,7 @@ void ejecutarGiro(uint8_t giro) {
 		HAL_Delay(tiempo_muerto);
 		break;
 
-<<<<<<< Updated upstream
-	case DERECHA:
-		setMotorIzquierdo(AVANCE);
-		setMotorDerecho(RETROCESO);
+
 =======
 	case derecha:
 		setMotorIzquierdo(avance);
@@ -718,25 +680,19 @@ void ejecutarGiro(uint8_t giro) {
 		HAL_Delay(tiempo_muerto);
 		setMotorIzquierdo(avance);
 		setMotorDerecho(retroceso);
->>>>>>> Stashed changes
 		HAL_Delay(tiempo_giro90);
 		setMotorIzquierdo(avance);
 		setMotorDerecho(avance);
 		HAL_Delay(tiempo_muerto);
 		break;
 
-<<<<<<< Updated upstream
-	case IZQUIERDA:
-		setMotorIzquierdo(RETROCESO);
-		setMotorDerecho(AVANCE);
-=======
+
 	case izquierda:
 		setMotorIzquierdo(avance);
 		setMotorDerecho(avance);
 		HAL_Delay(tiempo_muerto);
 		setMotorIzquierdo(retroceso);
 		setMotorDerecho(avance);
->>>>>>> Stashed changes
 		HAL_Delay(tiempo_giro90);
 		setMotorIzquierdo(avance);
 		setMotorDerecho(avance);
