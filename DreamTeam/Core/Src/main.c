@@ -667,7 +667,6 @@ void ejecutarGiro(uint8_t giro) {
 		break;
 
 
-=======
 	case derecha:
 		setMotorIzquierdo(avance);
 		setMotorDerecho(avance);
