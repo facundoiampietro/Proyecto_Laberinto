@@ -43,8 +43,6 @@
 #define DERECHA  2
 #define GIRO_180   3
 
-#define margen_D 550 // adcs
-#define margen_I 550
 
 #define AVANCE     0b01
 #define RETROCESO  0b10
@@ -53,7 +51,6 @@
 #define v_max 63999
 #define v_media 32000
 
-#define tiempo_giro90 615
 #define tiempo_giro180 1100
 #define tiempo_muerto 300
 
@@ -459,6 +456,7 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+<<<<<<< Updated upstream
 
 uint8_t obtener_orientacion_N(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
 	if (casilla_n == ubicacion + 1)
@@ -571,6 +569,7 @@ void ejecutarGiro(uint8_t giro) {
 		HAL_Delay(tiempo_muerto);
 		break;
 
+<<<<<<< Updated upstream
 	case DERECHA:
 		setMotorIzquierdo(AVANCE);
 		setMotorDerecho(RETROCESO);
