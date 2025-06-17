@@ -849,13 +849,10 @@ uint8_t calculo_minimo_peso(uint8_t peso[cant_casilleros],
 	return casilla_n;
 }
 
-<<<<<<< Updated upstream
-=======
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 }
 
->>>>>>> Stashed changes
 /* USER CODE END 4 */
 
 /**
