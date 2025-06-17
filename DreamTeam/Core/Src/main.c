@@ -85,11 +85,14 @@ uint8_t pared[cant_casilleros];
 uint8_t contador_casillas = 0;
 uint8_t prueba;
 uint8_t contador_giros = 0;
+uint16_t sensor_izq_min = 32700;
+uint16_t sensor_der_min = 32700;
+uint16_t sensor_izq_max = 0;
+uint16_t sensor_der_max = 0;
 /* USER CODE BEGIN PV */
 uint16_t dma_buffer[64];
 
 volatile uint16_t sensor_izq_avg;
-
 volatile uint16_t sensor_der_avg;
 /* USER CODE END PV */
 
@@ -122,7 +125,7 @@ void programa_principal (void);
 void prueba_post_relleno (void);
 void error(void);
 void mini_retroceso(void);
-
+void ajuste_automatico(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -215,6 +218,9 @@ int main(void) {
 			programa_principal();
 			break;
 
+		case 5:
+			ajuste_automatico();
+			break;
 
 		case 10:{
 			TIM3->CCR3 = 0;
@@ -463,6 +469,24 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+void ajuste_automatico(void) {
+	if (sensor_der_min > sensor_der_avg) {
+		sensor_der_min = sensor_der_avg;
+	}
+	if (sensor_izq_min > sensor_izq_avg) {
+		sensor_izq_min = sensor_izq_avg;
+	}
+	if (sensor_der_max < sensor_der_avg) {
+		sensor_der_max = sensor_der_avg;
+	}
+	if (sensor_izq_max < sensor_izq_avg) {
+		sensor_izq_max = sensor_izq_avg;
+	}
+	if (boton=0){
+		margen_D = ((sensor_der_max * 0.4) + (sensor_der_min*0.6)) ;
+		margen_I = ((sensor_izq_max * 0.4) + (sensor_izq_min * 0.6)) ;
+	}
+}
 
 void prueba_avanzar(void) {
 	correccion_avanzar();//codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
