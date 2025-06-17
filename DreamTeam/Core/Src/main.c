@@ -43,6 +43,8 @@
 #define DERECHA  2
 #define GIRO_180   3
 
+#define margen_D 1100 // adcs  ESTE ES DE LA IZQUIERDA
+#define margen_I 600
 
 #define AVANCE     0b01
 #define RETROCESO  0b10
@@ -51,8 +53,14 @@
 #define v_max 63999
 #define v_media 32000
 
+#define tiempo_giro90 575
 #define tiempo_giro180 1100
 #define tiempo_muerto 300
+<<<<<<< Updated upstream
+=======
+#define tiempo_mini 150
+#define tiempo_rebotes 20
+>>>>>>> Stashed changes
 
 #define cant_casilleros 16
 /* USER CODE END PD */
@@ -182,6 +190,10 @@ int main(void) {
 	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 
+<<<<<<< Updated upstream
+=======
+	prueba = 4; //Aca se elige que programa queremos que se realice
+>>>>>>> Stashed changes
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -193,6 +205,7 @@ int main(void) {
 		//act_pesos(pared, peso);
 		//}
 		switch (prueba) {
+<<<<<<< Updated upstream
 		    case 0:
 		        prueba0 ()
 		        break;
@@ -226,6 +239,27 @@ int main(void) {
 
 		//faltaria el if de la pared
 
+=======
+		case 0:
+			prueba_avanzar();
+			break;
+		case 1:
+			prueba_giros_y_sensores();
+			break;
+		case 2:
+			prueba_casilla_n();
+			break;
+		case 3:
+			prueba_post_relleno();
+			break;
+		case 4:
+			programa_principal();
+		//default:
+
+			break;
+		}
+
+>>>>>>> Stashed changes
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */
@@ -576,6 +610,7 @@ void ejecutarGiro(uint8_t giro) {
 		HAL_Delay(tiempo_giro90);
 		break;
 
+<<<<<<< Updated upstream
 	case IZQUIERDA:
 		setMotorIzquierdo(RETROCESO);
 		setMotorDerecho(AVANCE);
@@ -654,6 +689,7 @@ bool verificar_sensor(void) {
 	return pedido;
 }
 
+<<<<<<< Updated upstream
 uint8_t act_pared(uint8_t pared[cant_casilleros], uint8_t ubicacion,
 		uint8_t orientacion_actual) { // ESTE CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
 
