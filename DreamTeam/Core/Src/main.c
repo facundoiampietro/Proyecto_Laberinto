@@ -493,6 +493,110 @@ static void MX_GPIO_Init(void) {
 <<<<<<< Updated upstream
 
 uint8_t obtener_orientacion_N(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
+=======
+void prueba_avanzar(void) {
+	correccion_avanzar();//codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
+	ejecutarGiro(izquierda);
+	correccion_avanzar();
+	while(1);
+}
+
+void prueba_giros_y_sensores(void) {
+	correccion_avanzar();
+	if (verificar_sensor()) {
+		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+	}
+	if (ubicacion == 8) {
+		HAL_Delay(600);
+		ejecutarGiro(izquierda);
+		orientacion_actual = oeste;
+		while ((ubicacion == 8)) {
+			correccion_avanzar();
+			if (verificar_sensor()) {
+				ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+			}
+		}
+	}
+	if (ubicacion == 9) {
+		HAL_Delay(600);
+		ejecutarGiro(derecha);
+		orientacion_actual = norte;
+		while ((ubicacion == 9)) {
+			correccion_avanzar();
+			if (verificar_sensor()) {
+				ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+			}
+		}
+	}
+	if ((ubicacion == 13)
+			&& (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin)
+					== GPIO_PIN_RESET)) {
+		ejecutarGiro(giro_180);
+		orientacion_actual = sur;
+		correccion_avanzar();
+	}
+}
+
+void prueba_casilla_n(void) {
+
+//	comentar el de arriba o el de abajo
+	ubicacion = 7; //elegir ubicacion
+	pared[7] = 1; //tiene parede en frente, izq y der
+	peso[11] = 1;
+	peso[6] = 3;
+	peso[3] = 3; //asignarles pesos arbitrarios para ver si cumple con que vaya al menor
+	casilla_n = calculo_minimo_peso(peso, pared, ubicacion); //deberia dar que tiene que ir a 11
+
+}
+
+void prueba_post_relleno(void) {
+	ubicacion = 5;
+	casilla_n = 1;
+	orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //deberia dar SUR
+	orientacion_actual = norte;
+	giro = obtenerGiro(orientacion_actual, orientacion_futura); //deberia dar giro 180
+	ejecutarGiro(giro); //tendria que girar 180 xD
+	while (1);
+}
+
+void programa_principal(void) {
+	correccion_avanzar();
+
+	if (verificar_sensor()) { //cambio de casilla
+		contador_casillas= contador_casillas + 1;
+		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+		casilla_n = calculo_minimo_peso(peso, pared, ubicacion); //calcula la casilla a la que hay q ir
+		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
+		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+		orientacion_actual = orientacion_futura;  //actualizo la orientación
+		ejecutarGiro(giro); //giro y me voy del if
+	}
+	if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin)) {
+		HAL_Delay(tiempo_rebotes);
+		if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET) {
+			act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
+			act_pesos(pared, peso);  //luego actualiza el peso
+			casilla_n = calculo_minimo_peso(peso, pared, ubicacion); //calcula la casilla a la que hay q ir
+			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
+			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+			orientacion_actual = orientacion_futura;  //actualizo la orientación
+			ejecutarGiro(giro); //giro y me voy del if
+		}
+	}
+}
+void error(void) {      //CUANDO HAY ERROR RETROCEDE INFINITAMENTE
+	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
+	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = v_media; // rueda a velocidad media
+	while (1)
+		;
+}
+
+uint8_t obtener_orientacion_futura(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
+>>>>>>> Stashed changes
 	if (casilla_n == ubicacion + 1)
 		return OESTE;
 	if (casilla_n == ubicacion - 1)
@@ -607,20 +711,45 @@ void ejecutarGiro(uint8_t giro) {
 	case DERECHA:
 		setMotorIzquierdo(AVANCE);
 		setMotorDerecho(RETROCESO);
+=======
+	case derecha:
+		setMotorIzquierdo(avance);
+		setMotorDerecho(avance);
+		HAL_Delay(tiempo_muerto);
+		setMotorIzquierdo(avance);
+		setMotorDerecho(retroceso);
+>>>>>>> Stashed changes
 		HAL_Delay(tiempo_giro90);
+		setMotorIzquierdo(avance);
+		setMotorDerecho(avance);
+		HAL_Delay(tiempo_muerto);
 		break;
 
 <<<<<<< Updated upstream
 	case IZQUIERDA:
 		setMotorIzquierdo(RETROCESO);
 		setMotorDerecho(AVANCE);
+=======
+	case izquierda:
+		setMotorIzquierdo(avance);
+		setMotorDerecho(avance);
+		HAL_Delay(tiempo_muerto);
+		setMotorIzquierdo(retroceso);
+		setMotorDerecho(avance);
+>>>>>>> Stashed changes
 		HAL_Delay(tiempo_giro90);
+		setMotorIzquierdo(avance);
+		setMotorDerecho(avance);
+		HAL_Delay(tiempo_muerto);
 		break;
 
 	case GIRO_180:
 		setMotorIzquierdo(AVANCE);
 		setMotorDerecho(RETROCESO);
 		HAL_Delay(tiempo_giro180);
+		setMotorIzquierdo(avance);
+		setMotorDerecho(avance);
+		HAL_Delay(tiempo_muerto);
 		break;
 
 	}
@@ -692,6 +821,10 @@ bool verificar_sensor(void) {
 <<<<<<< Updated upstream
 uint8_t act_pared(uint8_t pared[cant_casilleros], uint8_t ubicacion,
 		uint8_t orientacion_actual) { // ESTE CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
+=======
+
+uint8_t act_pared(uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual) { // este CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
+>>>>>>> Stashed changes
 
 	// actualizamos el valor de pared según la orientación
 	switch (orientacion_actual) { //SE PONE 0X08 PORQ ES HEXADECIMAL, SI NO LO PONES ESTA EN OTRA BASE, ME HIZO RE CONFUNDIR
@@ -772,6 +905,13 @@ uint8_t calculo_minimo_peso(uint8_t peso[cant_casilleros],
 	return casilla_n;
 }
 
+<<<<<<< Updated upstream
+=======
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+
+}
+
+>>>>>>> Stashed changes
 /* USER CODE END 4 */
 
 /**
