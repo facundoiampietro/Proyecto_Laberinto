@@ -56,11 +56,8 @@
 #define tiempo_giro90 575
 #define tiempo_giro180 1100
 #define tiempo_muerto 300
-<<<<<<< Updated upstream
-=======
 #define tiempo_mini 150
 #define tiempo_rebotes 20
->>>>>>> Stashed changes
 
 #define cant_casilleros 16
 /* USER CODE END PD */
@@ -116,10 +113,13 @@ void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
 bool verificar_sensor(void);
-void prueba0 ();
-void prueba1 ();
-void prueba2 ();
-void prueba3 ();
+void prueba_avanzar (void);
+void prueba_giros_y_sensores (void);
+void prueba_casilla_n (void);
+void programa_principal (void);
+void prueba_post_relleno (void);
+void error(void);
+void mini_reversa(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -190,8 +190,6 @@ int main(void) {
 	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 
-<<<<<<< Updated upstream
-=======
 	prueba = 4; //Aca se elige que programa queremos que se realice
 	/* USER CODE END 2 */
 
@@ -224,7 +222,6 @@ int main(void) {
 			break;
 		}
 
->>>>>>> Stashed changes
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */
@@ -455,10 +452,7 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
-<<<<<<< Updated upstream
 
-uint8_t obtener_orientacion_N(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
-=======
 void prueba_avanzar(void) {
 	correccion_avanzar();//codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
 	ejecutarGiro(izquierda);
@@ -774,13 +768,8 @@ bool verificar_sensor(void) {
 	return pedido;
 }
 
-<<<<<<< Updated upstream
-uint8_t act_pared(uint8_t pared[cant_casilleros], uint8_t ubicacion,
-		uint8_t orientacion_actual) { // ESTE CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
-=======
 
 uint8_t act_pared(uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual) { // este CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
->>>>>>> Stashed changes
 
 	// actualizamos el valor de pared según la orientación
 	switch (orientacion_actual) { //SE PONE 0X08 PORQ ES HEXADECIMAL, SI NO LO PONES ESTA EN OTRA BASE, ME HIZO RE CONFUNDIR
