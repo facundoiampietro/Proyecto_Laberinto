@@ -61,6 +61,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define CS_I2C_SPI_Pin GPIO_PIN_3
 #define CS_I2C_SPI_GPIO_Port GPIOE
+#define boton_Pin GPIO_PIN_0
+#define boton_GPIO_Port GPIOA
 #define sensor_derecho_Pin GPIO_PIN_0
 #define sensor_derecho_GPIO_Port GPIOB
 #define sensor_izquierdo_Pin GPIO_PIN_1
@@ -73,6 +75,14 @@ void Error_Handler(void);
 #define m0_derecha_GPIO_Port GPIOB
 #define m1_derecha_Pin GPIO_PIN_14
 #define m1_derecha_GPIO_Port GPIOB
+#define led_verde_Pin GPIO_PIN_12
+#define led_verde_GPIO_Port GPIOD
+#define led_naranja_Pin GPIO_PIN_13
+#define led_naranja_GPIO_Port GPIOD
+#define led_rojo_Pin GPIO_PIN_14
+#define led_rojo_GPIO_Port GPIOD
+#define led_azul_Pin GPIO_PIN_15
+#define led_azul_GPIO_Port GPIOD
 #define sensor_frontal_Pin GPIO_PIN_6
 #define sensor_frontal_GPIO_Port GPIOC
 #define sensor_linea_Pin GPIO_PIN_7
