@@ -43,8 +43,8 @@
 #define derecha  2
 #define giro_180   3
 
-#define margen_D 1100 // adcs  este ES DE LA izquierda
-#define margen_I 600
+#define margen_D 550 // adcs  este ES DE LA izquierda
+#define margen_I 1250
 
 #define avance     0b01
 #define retroceso  0b10
@@ -53,15 +53,17 @@
 #define v_max 63999
 #define v_media 32000
 
-#define tiempo_giro90 575
+#define tiempo_giro90 650
 #define tiempo_giro180 1100
 #define tiempo_muerto_avanzar 300
 #define tiempo_muerto 300
 #define tiempo_mini 150
 #define tiempo_rebotes 20
-#define tiempo_muerto_retroceso 200
+#define tiempo_muerto_retroceso 100
+#define tiempo_giro90_2 900
 
 #define cant_casilleros 16
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -89,8 +91,10 @@ uint16_t sensor_izq_min = 32700;
 uint16_t sensor_der_min = 32700;
 uint16_t sensor_izq_max = 0;
 uint16_t sensor_der_max = 0;
+
 /* USER CODE BEGIN PV */
 uint16_t dma_buffer[64];
+// uint16_t margen_D, margen_I;
 
 volatile uint16_t sensor_izq_avg;
 volatile uint16_t sensor_der_avg;
@@ -145,8 +149,7 @@ int main(void) {
 
 	/* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */	HAL_Init();
 
 	/* USER CODE BEGIN Init */
 
@@ -196,6 +199,7 @@ int main(void) {
 	TIM3->CCR3 = v_media; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_media; // rueda a velocidad media
 
+
 	prueba = 4; //Aca se elige que programa queremos que se realice
 	/* USER CODE END 2 */
 
@@ -222,6 +226,13 @@ int main(void) {
 			ajuste_automatico();
 			break;
 
+
+		case 6:
+			sensor_izq_min = 32700;
+			sensor_der_min = 32700;
+			sensor_izq_max = 0;
+			sensor_der_max = 0;
+			prueba = 5;
 		case 10:{
 			TIM3->CCR3 = 0;
 			TIM3->CCR4 = 0;
@@ -470,6 +481,10 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 void ajuste_automatico(void) {
+	if (sensor_der_min == 0 || sensor_izq_min == 0){
+		sensor_der_min = 32000;
+		sensor_izq_min = 32000;
+	}
 	if (sensor_der_min > sensor_der_avg) {
 		sensor_der_min = sensor_der_avg;
 	}
@@ -482,10 +497,11 @@ void ajuste_automatico(void) {
 	if (sensor_izq_max < sensor_izq_avg) {
 		sensor_izq_max = sensor_izq_avg;
 	}
-	if (boton=0){
-		margen_D = ((sensor_der_max * 0.4) + (sensor_der_min*0.6)) ;
-		margen_I = ((sensor_izq_max * 0.4) + (sensor_izq_min * 0.6)) ;
-	}
+//	if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(Boton_GPIO_Port, Boton_Pin)){
+        contador_casillas = contador_casillas + 1 ;
+
+		prueba=4;
+	//	}
 }
 
 void prueba_avanzar(void) {
@@ -705,53 +721,100 @@ void mini_retroceso(void) {
 }
 
 void ejecutarGiro(uint8_t giro) {
-	switch (giro) {
-	case adelante:
-		setMotorIzquierdo(avance);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_muerto);
-		break;
+	if (contador_giros == 0){
+		switch (giro) {
+			case adelante:
+				setMotorIzquierdo(avance);
+				setMotorDerecho(avance);
+				HAL_Delay(tiempo_muerto);
+				break;
 
 
-	case derecha:
-		contador_giros = contador_giros + 1;
-		setMotorIzquierdo(avance);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_muerto_avanzar);
-		setMotorIzquierdo(avance);
-		setMotorDerecho(retroceso);
-		HAL_Delay(tiempo_giro90);
-		setMotorIzquierdo(avance);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_muerto);
-		break;
+			case derecha:
+				contador_giros = contador_giros + 1;
+				//setMotorIzquierdo(avance);
+				//setMotorDerecho(avance);
+				HAL_Delay(tiempo_muerto_avanzar);
+				setMotorIzquierdo(avance);
+				setMotorDerecho(retroceso);
+				HAL_Delay(tiempo_giro90);
+				setMotorIzquierdo(avance);
+				setMotorDerecho(avance);
+				HAL_Delay(tiempo_muerto);
+				break;
 
 
-	case izquierda:
-		contador_giros = contador_giros + 1;
-		setMotorIzquierdo(avance);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_muerto_avanzar);
-		setMotorIzquierdo(retroceso);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_giro90);
-		setMotorIzquierdo(avance);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_muerto);
-		break;
+			case izquierda:
+				contador_giros = contador_giros + 1;
+				//setMotorIzquierdo(avance);
+				//setMotorDerecho(avance);
+				HAL_Delay(tiempo_muerto_avanzar);
+				setMotorIzquierdo(retroceso);
+				setMotorDerecho(avance);
+				HAL_Delay(tiempo_giro90);
+				setMotorIzquierdo(avance);
+				setMotorDerecho(avance);
+				HAL_Delay(tiempo_muerto);
+				break;
 
-	case giro_180:
-		contador_giros = contador_giros + 1;
-		setMotorIzquierdo(avance);
-		setMotorDerecho(retroceso);
-		HAL_Delay(tiempo_giro180);
-		setMotorIzquierdo(avance);
-		setMotorDerecho(avance);
-		HAL_Delay(tiempo_muerto);
-		break;
+			case giro_180:
+				contador_giros = contador_giros + 1;
+				setMotorIzquierdo(avance);
+				setMotorDerecho(retroceso);
+				HAL_Delay(tiempo_giro180);
+				setMotorIzquierdo(avance);
+				setMotorDerecho(avance);
+				HAL_Delay(tiempo_muerto);
+				break;
+
+			}
+	}
+		else
+			switch (giro) {
+				case adelante:
+					setMotorIzquierdo(avance);
+					setMotorDerecho(avance);
+					HAL_Delay(tiempo_muerto);
+					break;
+
+
+				case derecha:
+					contador_giros = contador_giros + 1;
+					setMotorIzquierdo(avance);
+					setMotorDerecho(retroceso);
+					HAL_Delay(tiempo_giro90_2);
+					setMotorIzquierdo(avance);
+					setMotorDerecho(avance);
+					HAL_Delay(tiempo_muerto);
+					break;
+
+
+				case izquierda:
+					contador_giros = contador_giros + 1;
+					HAL_Delay(tiempo_muerto_avanzar);
+					setMotorIzquierdo(retroceso);
+					setMotorDerecho(avance);
+					HAL_Delay(tiempo_giro90_2);
+					setMotorIzquierdo(avance);
+					setMotorDerecho(avance);
+					HAL_Delay(tiempo_muerto);
+					break;
+
+				case giro_180:
+					contador_giros = contador_giros + 1;
+					setMotorIzquierdo(avance);
+					setMotorDerecho(retroceso);
+					HAL_Delay(tiempo_giro180);
+					setMotorIzquierdo(avance);
+					setMotorDerecho(avance);
+					HAL_Delay(tiempo_muerto);
+					break;
+
+				}
+
 
 	}
-}
+
 
 void setMotorIzquierdo(uint8_t modo) {
 
