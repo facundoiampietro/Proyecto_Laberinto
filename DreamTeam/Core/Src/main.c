@@ -125,6 +125,7 @@ void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
 bool verificar_sensor(void);
+void prueba_avanzar (void);
 void prueba_rapida(void);
 void prueba_giros_y_sensores(void);
 void prueba_casilla_n(void);
@@ -215,9 +216,53 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		switch (prueba) {
+
+		case 0:
+			prueba_avanzar();
+			break;
+
+		case 1:
+			prueba_giros_y_sensores();
+			break;
+
+		case 4:
+			programa_principal();
+			break;
+
+		case 5:
+			ajuste_automatico();
+			break;
+
+
+		case 6:
+			sensor_izq_min = 32700;
+			sensor_der_min = 32700;
+			sensor_izq_max = 0;
+			sensor_der_max = 0;
+			prueba = 5;
+		case 10:{
+			TIM3->CCR3 = 0;
+			TIM3->CCR4 = 0;
+
+		}
+			break;
+		case 100:
+			prueba_casilla_n();
+			break;
+
+		case 101:
+			prueba_post_relleno();
+			break;
+
+
+		}
+
+
 	}
-  /* USER CODE END 3 */
 }
+	/* USER CODE END 3 */
+
 
 /**
   * @brief System Clock Configuration
@@ -514,6 +559,12 @@ void prueba_rapida(void) {
 	correccion_avanzar();
 	while (1)
 		;
+}
+void prueba_avanzar(void) {
+	correccion_avanzar();//codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
+	ejecutarGiro(izquierda);
+	correccion_avanzar();
+	while(1);
 }
 
 void prueba_giros_y_sensores(void) {
