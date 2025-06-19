@@ -52,7 +52,7 @@
 #define v_media_der 32000
 #define v_media 32000
 
-#define tiempo_giro90 625
+#define tiempo_giro90 650
 #define tiempo_giro180 1100
 #define tiempo_giro90_2 900
 
@@ -491,7 +491,7 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 void ajuste_automatico(void) {
-	if ((sensor_der_min == 0) | (sensor_izq_min == 0)) {
+	if ((sensor_der_min == 0) || (sensor_izq_min == 0)) {
 		sensor_der_min = 32000;
 		sensor_izq_min = 32000;
 	}

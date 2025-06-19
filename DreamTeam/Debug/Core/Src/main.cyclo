@@ -4,7 +4,7 @@
 ../Core/Src/main.c:359:13:MX_TIM3_Init	7
 ../Core/Src/main.c:413:13:MX_DMA_Init	1
 ../Core/Src/main.c:430:13:MX_GPIO_Init	1
-../Core/Src/main.c:493:6:ajuste_automatico	8
+../Core/Src/main.c:493:6:ajuste_automatico	9
 ../Core/Src/main.c:519:6:prueba_rapida	1
 ../Core/Src/main.c:527:6:prueba_giros_y_sensores	10
 ../Core/Src/main.c:561:6:prueba_casilla_n	1
