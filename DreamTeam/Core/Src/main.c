@@ -983,18 +983,18 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 		if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
 			minimo_peso = peso[ubicacion + 1];
 			casilla_n = ubicacion + 1;
-
-			if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
+		}	
+		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
 				minimo_peso = peso[ubicacion + 4];
 				casilla_n = ubicacion + 4;
-			}
+		}
 
-			if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
+		if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
 				minimo_peso = peso[ubicacion - 4];
 				casilla_n = ubicacion - 4;
-			}
-
 		}
+
+		
 		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) {
 			minimo_peso = peso[ubicacion - 1];
 			casilla_n = ubicacion - 1;
@@ -1022,7 +1022,7 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 		break;
 	default:
 		return 100;
-	}
+	
 }
 void filtrado_pared(void) {
 	uint32_t tiempo_actual = HAL_GetTick();
