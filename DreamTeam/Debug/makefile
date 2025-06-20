@@ -60,8 +60,8 @@ all: main-build
 main-build: DreamTeam.elf secondary-outputs
 
 # Tool invocations
-DreamTeam.elf DreamTeam.map: $(OBJS) $(USER_OBJS) F:\Users\Administrador\Documents\GitHub\Proyecto_Laberinto\Proyecto_Laberinto\DreamTeam\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "DreamTeam.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"F:\Users\Administrador\Documents\GitHub\Proyecto_Laberinto\Proyecto_Laberinto\DreamTeam\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DreamTeam.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+DreamTeam.elf DreamTeam.map: $(OBJS) $(USER_OBJS) C:\Users\sebas\Desktop\Laberinto\Proyecto_Laberinto\Proyecto_Laberinto\con\ irq\ y\ uart\Laberinto_UART\DreamTeam\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "DreamTeam.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\sebas\Desktop\Laberinto\Proyecto_Laberinto\Proyecto_Laberinto\con irq y uart\Laberinto_UART\DreamTeam\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="DreamTeam.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
