@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h> //Nos permite usar la función sprintf
+#include <string.h> //Nos permite usar la función strcat
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,13 +74,15 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart5;
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
-
+char mensaje[16];
+const uint8_t delay = 50;
 uint8_t ubicacion = 0;    //defino ubicacion (va a ser un numero entre 0 y 15)
 uint8_t orientacion_actual = norte;
 uint8_t orientacion_futura = norte;
@@ -145,6 +149,7 @@ void mini_avance(void);
 void filtrado_pared_funcion(void);
 void filtrado_linea_funcion(void);
 void de_reversa_mami(void);
+void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -578,6 +583,7 @@ void programa_principal(void) {
 		contador_giros = 0;
 		contador_casillas = contador_casillas + 1;
 		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+		envio_ubicacion(ubicacion, casilla_n);
 		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
 		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
@@ -990,6 +996,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		tiempo_inicio_2 = HAL_GetTick();
 		filtrado_pared = 1;
 	}
+}
+
+void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n) {
+	if (casilla_n == ubicacion){
+		sprintf(mensaje, "%d", ubicacion);
+		strcat(mensaje, "\r\n");
+		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+	}
+
 }
 
 /* USER CODE END 4 */
