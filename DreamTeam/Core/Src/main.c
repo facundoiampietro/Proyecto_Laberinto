@@ -96,9 +96,16 @@ uint16_t sensor_der_max = 0;
 uint16_t margen_i;
 uint16_t margen_d;
 
+uint8_t camino_solucion[32] = { 0 };
+
 volatile uint32_t tiempo_inicio = 0;
-volatile uint8_t solicitud_actualizar = 0;
-volatile uint8_t filtrado = 0;
+volatile uint8_t solicitud_pared = 0;
+volatile uint8_t filtrado_pared = 0;
+
+volatile uint32_t tiempo_inicio_2 = 0;
+volatile uint8_t solicitud_linea = 0;
+volatile uint8_t filtrado_linea = 0;
+
 uint16_t dma_buffer[64];
 
 volatile uint16_t sensor_izq_avg;
@@ -126,10 +133,8 @@ void apagar_derecha(void);
 void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
-bool verificar_sensor(void);
 void prueba_avanzar(void);
 void prueba_rapida(void);
-void prueba_giros_y_sensores(void);
 void prueba_casilla_n(void);
 void programa_principal(void);
 void prueba_post_relleno(void);
@@ -137,7 +142,9 @@ void error(void);
 void mini_retroceso(void);
 void ajuste_automatico(void);
 void mini_avance(void);
-void filtrado_pared(void);
+void filtrado_pared_funcion(void);
+void filtrado_linea_funcion(void);
+void de_reversa_mami(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -158,7 +165,6 @@ int main(void) {
 	/* MCU Configuration--------------------------------------------------------*/
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
 	HAL_Init();
 
 	/* USER CODE BEGIN Init */
@@ -225,7 +231,7 @@ int main(void) {
 			break;
 
 		case 1:
-			prueba_giros_y_sensores();
+
 			break;
 
 		case 4:
@@ -242,29 +248,26 @@ int main(void) {
 			sensor_izq_max = 0;
 			sensor_der_max = 0;
 			prueba = 5;
-		case 10: {
+		case 10:
 			TIM3->CCR3 = 0;
 			TIM3->CCR4 = 0;
 			HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
-
-		}
 			break;
-		case 100:
-			prueba_casilla_n();
+		case 11:
+			contador_casillas = contador_casillas - 1;
+			prueba = 12;
 			break;
-
-		case 101:
-			prueba_post_relleno();
+		case 12:
+			de_reversa_mami();
 			break;
-
 		}
 
 	}
+	/* USER CODE END 3 */
 }
-/* USER CODE END 3 */
 
 /**
  * @brief System Clock Configuration
@@ -490,17 +493,11 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : sensor_frontal_Pin */
-	GPIO_InitStruct.Pin = sensor_frontal_Pin;
+	/*Configure GPIO pins : sensor_frontal_Pin sensor_linea_Pin */
+	GPIO_InitStruct.Pin = sensor_frontal_Pin | sensor_linea_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(sensor_frontal_GPIO_Port, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : sensor_linea_Pin */
-	GPIO_InitStruct.Pin = sensor_linea_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(sensor_linea_GPIO_Port, &GPIO_InitStruct);
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	/* EXTI interrupt init*/
 	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
@@ -512,6 +509,26 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+void de_reversa_mami(void) {//codigo para ir de la casilla 15 a la 0... muy chiche
+
+	if (solicitud_linea == 1) { //cambio de casilla
+		contador_giros = 0;
+		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+		casilla_n = camino_solucion[contador_casillas]; //calcula la casilla a la que hay q ir
+		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
+		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+		orientacion_actual = orientacion_futura;  //actualizo la orientación
+		ejecutarGiro(giro); //giro y me voy del if
+		contador_casillas = contador_casillas - 1;
+		solicitud_linea = 0;
+	}
+	if (filtrado_linea == 1) {
+		filtrado_linea_funcion();
+	}
+	if (ubicacion == 0)
+		prueba = 10;
+}
 void ajuste_automatico(void) {
 	if ((sensor_der_min == 0) || (sensor_izq_min == 0)) {
 		sensor_der_min = 32000;
@@ -554,67 +571,10 @@ void prueba_avanzar(void) {
 		;
 }
 
-void prueba_giros_y_sensores(void) {
-	correccion_avanzar();
-	if (verificar_sensor()) {
-		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
-	}
-	if (ubicacion == 8) {
-		HAL_Delay(600);
-		ejecutarGiro(izquierda);
-		orientacion_actual = oeste;
-		while ((ubicacion == 8)) {
-			correccion_avanzar();
-			if (verificar_sensor()) {
-				ubicacion = act_ubicacion(ubicacion, orientacion_actual);
-			}
-		}
-	}
-	if (ubicacion == 9) {
-		HAL_Delay(600);
-		ejecutarGiro(derecha);
-		orientacion_actual = norte;
-		while ((ubicacion == 9)) {
-			correccion_avanzar();
-			if (verificar_sensor()) {
-				ubicacion = act_ubicacion(ubicacion, orientacion_actual);
-			}
-		}
-	}
-	if ((ubicacion == 13) && (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET)) {
-		ejecutarGiro(giro_180);
-		orientacion_actual = sur;
-		correccion_avanzar();
-	}
-}
-
-void prueba_casilla_n(void) {
-
-//	comentar el de arriba o el de abajo
-	ubicacion = 7; //elegir ubicacion
-	pared[7] = 1; //tiene parede en frente, izq y der
-	peso[11] = 1;
-	peso[6] = 3;
-	peso[3] = 3; //asignarles pesos arbitrarios para ver si cumple con que vaya al menor
-	casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //deberia dar que tiene que ir a 11
-
-}
-
-void prueba_post_relleno(void) {
-	ubicacion = 5;
-	casilla_n = 1;
-	orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //deberia dar sur
-	orientacion_actual = norte;
-	giro = obtenerGiro(orientacion_actual, orientacion_futura); //deberia dar giro 180
-	ejecutarGiro(giro); //tendria que girar 180 xD
-	while (1)
-		;
-}
-
 void programa_principal(void) {
 	correccion_avanzar();
 
-	if (verificar_sensor()) { //cambio de casilla
+	if (solicitud_linea == 1) { //cambio de casilla
 		contador_giros = 0;
 		contador_casillas = contador_casillas + 1;
 		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
@@ -623,8 +583,10 @@ void programa_principal(void) {
 		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 		orientacion_actual = orientacion_futura;  //actualizo la orientación
 		ejecutarGiro(giro); //giro y me voy del if
+		camino_solucion[contador_casillas] = ubicacion;
+		solicitud_linea = 0;
 	}
-	if (solicitud_actualizar == 1) {
+	if (solicitud_pared == 1) {
 		act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 		act_pesos(pared, peso);  //luego actualiza el peso
 		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
@@ -632,12 +594,14 @@ void programa_principal(void) {
 		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 		orientacion_actual = orientacion_futura;  //actualizo la orientación
 		ejecutarGiro(giro); //giro y me voy del if
-		solicitud_actualizar = 0;
+		solicitud_pared = 0;
 	}
-	if (filtrado == 1) {
-		filtrado_pared();
+	if (filtrado_pared == 1) {
+		filtrado_pared_funcion();
 	}
-
+	if (filtrado_linea == 1) {
+		filtrado_linea_funcion();
+	}
 	if (ubicacion == 15) {
 		prueba = 10;
 	}
@@ -834,7 +798,6 @@ void setMotorIzquierdo(uint8_t modo) {
 		HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 		break;
-
 	case retroceso:
 		HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
@@ -851,37 +814,12 @@ void setMotorDerecho(uint8_t modo) {
 		HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 		break;
-
 	case retroceso:
 		HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
 		break;
 
 	}
-}
-
-bool verificar_sensor(void) {
-	static GPIO_PinState ultima_lectura_valida = GPIO_PIN_SET;
-// Se crean variables para lecturas intermedias
-	GPIO_PinState lectura1, lectura2;
-// Se crea una variable booleana para indicar si hay un pedido
-	bool pedido = false; // No hay pedido hasta que se pulsa el botón
-// Se lee el estado del botón
-	lectura1 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
-// Si hubo un cambio
-	if (lectura1 != ultima_lectura_valida) {
-// Se espera un tiempo para filtrar los rebotes
-		HAL_Delay(20); // Retardo de 20 milisegundos
-// Se lee nuevamente el estado del botón
-		lectura2 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
-// Si ambas lecturas son iguales, se considera una lectura válida
-		if (lectura2 == lectura1)
-			ultima_lectura_valida = lectura2;
-// Si el botón pasó de liberado a pulsado (1-->0), hubo un pedido de cambio de estado
-		if (ultima_lectura_valida == GPIO_PIN_RESET)
-			pedido = true;
-	}
-	return pedido;
 }
 
 uint8_t act_pared(uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual) { // este CODIGO ES SUPONIENDO Q YA SE DETECTO LA PARED
@@ -983,18 +921,17 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 		if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
 			minimo_peso = peso[ubicacion + 1];
 			casilla_n = ubicacion + 1;
-		}	
+		}
 		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
-				minimo_peso = peso[ubicacion + 4];
-				casilla_n = ubicacion + 4;
+			minimo_peso = peso[ubicacion + 4];
+			casilla_n = ubicacion + 4;
 		}
 
 		if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
-				minimo_peso = peso[ubicacion - 4];
-				casilla_n = ubicacion - 4;
+			minimo_peso = peso[ubicacion - 4];
+			casilla_n = ubicacion - 4;
 		}
 
-		
 		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) {
 			minimo_peso = peso[ubicacion - 1];
 			casilla_n = ubicacion - 1;
@@ -1022,22 +959,36 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 		break;
 	default:
 		return 100;
-	
+	}
 }
-void filtrado_pared(void) {
+void filtrado_pared_funcion(void) {
 	uint32_t tiempo_actual = HAL_GetTick();
 	if (200 <= (tiempo_actual - tiempo_inicio)) {
 		GPIO_PinState estado_sensor = HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin);
 		if (GPIO_PIN_RESET == estado_sensor) {
-			solicitud_actualizar = 1;
+			solicitud_pared = 1;
 		}
-		filtrado = 0;
+		filtrado_pared = 0;
+	}
+}
+void filtrado_linea_funcion(void) {
+	uint32_t tiempo_actual_2 = HAL_GetTick();
+	if (tiempo_rebotes <= (tiempo_actual_2 - tiempo_inicio_2)) {
+		GPIO_PinState estado_sensor_2 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
+		if (GPIO_PIN_RESET == estado_sensor_2) {
+			solicitud_linea = 1;
+		}
+		filtrado_linea = 0;
 	}
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if ((GPIO_Pin == sensor_frontal_Pin) && (filtrado == 0)) {
+	if ((GPIO_Pin == sensor_frontal_Pin) && (filtrado_pared == 0)) {
 		tiempo_inicio = HAL_GetTick();
-		filtrado = 1;
+		filtrado_pared = 1;
+	}
+	if ((GPIO_Pin == sensor_linea_Pin) && (filtrado_linea == 0)) {
+		tiempo_inicio_2 = HAL_GetTick();
+		filtrado_pared = 1;
 	}
 }
 

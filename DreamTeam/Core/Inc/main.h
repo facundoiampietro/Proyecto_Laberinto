@@ -88,6 +88,7 @@ void Error_Handler(void);
 #define sensor_frontal_EXTI_IRQn EXTI9_5_IRQn
 #define sensor_linea_Pin GPIO_PIN_7
 #define sensor_linea_GPIO_Port GPIOC
+#define sensor_linea_EXTI_IRQn EXTI9_5_IRQn
 #define V_izquierda_Pin GPIO_PIN_8
 #define V_izquierda_GPIO_Port GPIOC
 #define V_derecha_Pin GPIO_PIN_9
