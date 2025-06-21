@@ -209,7 +209,7 @@ int main(void)
 	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_media_der; // rueda a velocidad media
 
-	prueba = 4; //Aca se elige que programa queremos que se realice
+	prueba = 6; //Aca se elige que programa queremos que se realice
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -218,9 +218,55 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		switch (prueba) {
+
+				case 0:
+					prueba_avanzar();
+					break;
+
+				case 1:
+					prueba_giros_y_sensores();
+					break;
+
+				case 4:
+					programa_principal();
+					break;
+
+				case 5:
+					ajuste_automatico();
+					break;
+
+				case 6:
+					sensor_izq_min = 32700;
+					sensor_der_min = 32700;
+					sensor_izq_max = 0;
+					sensor_der_max = 0;
+					prueba = 5;
+				case 10: {
+					TIM3->CCR3 = 0;
+					TIM3->CCR4 = 0;
+					HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_SET);
+					HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_SET);
+					HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
+					HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
+
+				}
+					break;
+				case 100:
+					prueba_casilla_n();
+					break;
+
+				case 101:
+					prueba_post_relleno();
+					break;
+
+				}
+
+			}
+
 	}
   /* USER CODE END 3 */
-}
+
 
 /**
   * @brief System Clock Configuration
@@ -505,11 +551,11 @@ void ajuste_automatico(void) {
 	if (sensor_izq_max < sensor_izq_avg) {
 		sensor_izq_max = sensor_izq_avg;
 	}
-//	if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(Boton_GPIO_Port, Boton_Pin)){
-	contador_casillas = contador_casillas + 1;
-
-	prueba = 4;
-	//	}
+	if (GPIO_PIN_SET == HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin)){
+		margen_d = ((sensor_der_max * 0.4) + (sensor_der_min * 0.6));
+		margen_i = ((sensor_izq_max * 0.4) + (sensor_izq_min * 0.6));
+		prueba = 4;
+		}
 }
 
 void prueba_avanzar(void) {
