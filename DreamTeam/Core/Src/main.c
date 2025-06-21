@@ -1049,7 +1049,7 @@ void filtrado_pared_funcion(void) {
 }
 void filtrado_linea_funcion(void) {
 	uint32_t tiempo_actual_2 = HAL_GetTick();
-	if (tiempo_rebotes <= (tiempo_actual_2 - tiempo_inicio_2)) {
+	if (1 <= (tiempo_actual_2 - tiempo_inicio_2)) {
 		GPIO_PinState estado_sensor_2 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
 		if (GPIO_PIN_RESET == estado_sensor_2) {
 			solicitud_linea = 1;
