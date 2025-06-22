@@ -83,7 +83,7 @@ TIM_HandleTypeDef htim3;
 UART_HandleTypeDef huart5;
 
 /* USER CODE BEGIN PV */
-char mensaje[16];
+char mensaje[32];
 const uint8_t delay = 50;
 uint8_t ubicacion = 0;    //defino ubicacion (va a ser un numero entre 0 y 15)
 uint8_t orientacion_actual = norte;
@@ -132,7 +132,7 @@ uint8_t act_ubicacion(uint8_t ubicacion, uint8_t orientacion_actual);
 void act_pesos(uint8_t *pared, uint8_t *peso);
 uint8_t act_pared(uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual);
 uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual);
-
+void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas);
 void correccion_avanzar(void);
 void avanzar(void);
 void apagar_izquierda(void);
@@ -152,6 +152,8 @@ void filtrado_pared_funcion(void);
 void filtrado_linea_funcion(void);
 void de_reversa_mami(void);
 void envio_ubicacion(uint8_t ubicacion, uint8_t casilla_n);
+void envio_pared(void);
+void envio_llegada(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -271,8 +273,11 @@ int main(void) {
 			HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
+			envio_llegada();
+			
 			break;
 		case 11:
+			eliminar_repetidos(camino_solucion,contador_casillas);
 			contador_casillas = contador_casillas - 1;
 			prueba = 12;
 			break;
@@ -559,6 +564,27 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 
+void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas) {
+    for (int i = 0; i < contador_casillas - 1; i++) {
+        for (int j = i + 1; j < contador_casillas; j++) {
+            if (camino_solucion[i] == camino_solucion[j]) {
+                // Se encontró repetido: eliminar todo entre i+1 y j inclusive
+                int cantidad_a_eliminar = j - i;
+
+                for (int k = j; k < contador_casillas; k++) {
+                    camino_solucion[k - cantidad_a_eliminar] = camino_solucion[k];
+                }
+
+                contador_casillas =contador_casillas - cantidad_a_eliminar;
+                i = -1;  // Reiniciar para volver a analizar todo desde el inicio
+                break;
+            }
+        }
+    }
+	
+}
+
+
 void de_reversa_mami(void) { //codigo para ir de la casilla 15 a la 0... muy chiche
 
 	if (solicitud_linea == 1) { //cambio de casilla
@@ -633,6 +659,7 @@ void programa_principal(void) {
 	}
 	if (solicitud_pared == 1) {
 		girando = 1;
+		envio_pared();
 		act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 		act_pesos(pared, peso);  //luego actualiza el peso
 		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
@@ -1022,7 +1049,7 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 	}
 void filtrado_pared_funcion(void) {
 	uint32_t tiempo_actual = HAL_GetTick();
-	if (200 <= (tiempo_actual - tiempo_inicio)) {
+	if (200 <= (tiempo_actual - tiempo_inicio) /*&& (girando == 0)*/ ) {
 		GPIO_PinState estado_sensor = HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port,
 		sensor_frontal_Pin);
 		if (GPIO_PIN_RESET == estado_sensor) {
@@ -1062,6 +1089,15 @@ void envio_ubicacion(uint8_t ubicacion, uint8_t casilla_n) {
 
 }
 
+void envio_pared(void) {
+		strcat(mensaje, "Choque pared \r\n");
+		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+}
+
+void envio_llegada(void) {
+		strcat(mensaje, "Llegue a la meta \r\n");
+		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+}
 /* USER CODE END 4 */
 
 /**
