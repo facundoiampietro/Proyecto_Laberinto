@@ -154,6 +154,7 @@ void de_reversa_mami(void);
 void envio_ubicacion(uint8_t ubicacion, uint8_t casilla_n);
 void envio_pared(void);
 void envio_llegada(void);
+void envio_casilla_n(uint8_t casilla_n);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -649,6 +650,7 @@ void programa_principal(void) {
 		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
 		envio_ubicacion(ubicacion, casilla_n);
 		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
+		envio_casilla_n(casilla_n);
 		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 		orientacion_actual = orientacion_futura;  //actualizo la orientación
@@ -663,6 +665,7 @@ void programa_principal(void) {
 		act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 		act_pesos(pared, peso);  //luego actualiza el peso
 		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
+		envio_casilla_n(casilla_n);
 		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 		orientacion_actual = orientacion_futura;  //actualizo la orientación
@@ -1097,6 +1100,11 @@ void envio_pared(void) {
 void envio_llegada(void) {
 		strcat(mensaje, "Llegue a la meta \r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+}
+void envio_casilla_n(uint8_t casilla_n) {
+	sprintf(mensaje, "%d", casilla_n);
+	strcat(mensaje, "Siguiente casilla: \r\n");
+	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
 /* USER CODE END 4 */
 
