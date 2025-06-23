@@ -50,14 +50,14 @@
 #define freno      0b00
 
 #define v_max 63999
-#define v_min 31000
-#define v_media_izq 36000
-#define v_media_der 38000
+#define v_min 32000
+#define v_media_izq 32000
+#define v_media_der 27500
 #define v_media 32000
 
-#define tiempo_giro90_der 570
-#define tiempo_giro90_izq 570
-#define tiempo_giro180 960
+#define tiempo_giro90_der 520
+#define tiempo_giro90_izq 520
+#define tiempo_giro180 1020
 #define tiempo_giro90_2 900
 
 #define tiempo_muerto_avanzar 200
@@ -96,12 +96,14 @@ uint8_t pared[cant_casilleros];
 uint8_t contador_casillas = 0;
 uint8_t prueba;
 uint8_t contador_giros = 0;
+uint8_t uart_llegada =0;
 uint16_t sensor_izq_min = 32700;
 uint16_t sensor_der_min = 32700;
 uint16_t sensor_izq_max = 0;
 uint16_t sensor_der_max = 0;
 uint16_t margen_i;
 uint16_t margen_d;
+uint8_t contador_aux= 0;
 
 uint8_t camino_solucion[32] = { 0 };
 uint8_t girando = 0;
@@ -158,6 +160,7 @@ void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n);
 void envio_pared(void);
 void envio_llegada(void);
 void envio_casilla_n(uint8_t casilla_n);
+void envio_contador(uint8_t contador_aux);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -237,6 +240,9 @@ int main(void)
 	HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_RESET);
 
+	ubicacion = 0;
+	uart_llegada = 0;
+
 	prueba = 6; //Aca se elige que programa queremos que se realice
   /* USER CODE END 2 */
 
@@ -246,6 +252,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
 		HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_RESET);
@@ -256,8 +263,10 @@ int main(void)
 			prueba_avanzar();
 			break;
 
-		case 1:
-
+		case 3:
+			ubicacion = 0;
+			prueba = 4;
+			HAL_Delay(1000);
 			break;
 
 		case 4:
@@ -282,7 +291,7 @@ int main(void)
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
 			envio_llegada();
-
+/*
 			if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
 				HAL_Delay(40);
 				if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
@@ -292,9 +301,9 @@ int main(void)
 					HAL_Delay(5000);
 
 				}
-			}
-		//	HAL_Delay(5000); //escpera 5 segundos... suspenso
-		// prueba = 11;
+			} */
+		//	HAL_Delay(3000); //escpera 5 segundos... suspenso
+		 //prueba = 11;
 			break;
 		case 11:
 			eliminar_repetidos(camino_solucion,contador_casillas);
@@ -657,9 +666,9 @@ void ajuste_automatico(void) {
 	if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
 		HAL_Delay(40);
 		if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-			margen_d = ((sensor_der_max * 0.4) + (sensor_der_min * 0.6));
-			margen_i = ((sensor_izq_max * 0.4) + (sensor_izq_min * 0.6));
-			prueba = 4;
+			margen_d = ((sensor_der_max * 0.5) + (sensor_der_min * 0.5));
+			margen_i = ((sensor_izq_max * 0.5) + (sensor_izq_min * 0.5));
+			prueba = 3;
 		}
 	}
 }
@@ -672,11 +681,10 @@ void prueba_rapida(void) {
 		;
 }
 void prueba_avanzar(void) {
-//	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
-	ejecutarGiro(izquierda);
-	ejecutarGiro(adelante);
+	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
+//	ejecutarGiro(izquierda);
+//	ejecutarGiro(adelante);
 
-	while (1)
 		;
 }
 
@@ -698,7 +706,6 @@ bool verificar_sensor(void) {
 
 void programa_principal(void) {
 	correccion_avanzar();
-
 	if (verificar_sensor()) { //cambio de casilla
 			contador_giros = 0;
 			contador_casillas = contador_casillas + 1;
@@ -716,10 +723,12 @@ void programa_principal(void) {
 		HAL_Delay(tiempo_rebotes);
 		if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET) {
 			envio_pared();
+			/*mini_avance();*/
 			act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 			act_pesos(pared, peso);  //luego actualiza el peso
 			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
 			envio_casilla_n(casilla_n);
+			envio_contador(contador_aux);
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
@@ -811,7 +820,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) { // Rutina de antención
 }
 void correccion_avanzar(void) {
 	// corrección para el sensor izquierdo
-	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
+/*	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
 		apagar_derecha();  // apagar motor derecho
 	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
 		apagar_izquierda();  //apaga motor izquierdo
@@ -820,7 +829,16 @@ void correccion_avanzar(void) {
 	} else {
 		avanzar();
 	}
-
+*/
+	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
+			apagar_izquierda();  // apagar motor derecho
+		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
+			apagar_derecha();  //apaga motor izquierdo
+		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+			avanzar();
+		} else {
+			avanzar();
+		}
 }
 void avanzar(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
@@ -868,13 +886,14 @@ void ejecutarGiro(uint8_t giro) {
 	case derecha:
 		if (contador_giros == 0) {
 			contador_giros = contador_giros + 1;
+			mini_avance();
 			setMotorIzquierdo(avance);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_muerto_avanzar);
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
 			HAL_Delay(tiempo_giro90_der);
-/*			mini_avance();
+		/*	mini_avance();
 			HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
 */
@@ -890,13 +909,14 @@ void ejecutarGiro(uint8_t giro) {
 	case izquierda:
 		if (contador_giros == 0) {
 			contador_giros = contador_giros + 1;
+			mini_avance();
 			setMotorIzquierdo(avance);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_muerto_avanzar);
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_giro90_izq);
-/*			mini_avance();
+	/*		mini_avance();
 			HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
 */
@@ -915,7 +935,8 @@ void ejecutarGiro(uint8_t giro) {
 		setMotorIzquierdo(avance);
 		setMotorDerecho(retroceso);
 		HAL_Delay(tiempo_giro180);
-//		mini_avance();
+		mini_avance();
+		mini_avance();
 		break;
 
 	}
@@ -1014,7 +1035,7 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 	}
 	else{
 
-	switch (orientacion_actual) {
+	switch (orientacion_actual) {	//paredes de cada casilla (8=pared en norte, 4=pared en este, 2=pared en sur, 1=pared en oeste)
 	case norte:
 		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
 			minimo_peso = peso[ubicacion + 4];
@@ -1024,7 +1045,8 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 			minimo_peso = peso[ubicacion + 1];
 			casilla_n = ubicacion + 1;
 		}
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) {
+		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
+			contador_aux = contador_aux + 1;
 			minimo_peso = peso[ubicacion - 1];
 			casilla_n = ubicacion - 1;
 		}
@@ -1044,7 +1066,7 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 			minimo_peso = peso[ubicacion + 1];
 			casilla_n = ubicacion + 1;
 		}
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) {
+		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
 			minimo_peso = peso[ubicacion - 1];
 			casilla_n = ubicacion - 1;
 		}
@@ -1070,14 +1092,14 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 			casilla_n = ubicacion - 4;
 		}
 
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) {
+		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
 			minimo_peso = peso[ubicacion - 1];
 			casilla_n = ubicacion - 1;
 		}
 		return casilla_n;
 		break;
 	case este:
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) {
+		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
 			minimo_peso = peso[ubicacion - 1];
 			casilla_n = ubicacion - 1;
 		}
@@ -1107,29 +1129,44 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n) {
 	if (casilla_n == ubicacion){
-		sprintf(mensaje, "%d", ubicacion);
-		strcat(mensaje, "Ubicacion: \r\n");
+		sprintf(mensaje, "Ubicacion: %d", ubicacion);
+		strcat(mensaje, "\r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 	}
 
 }
 void envio_pared(void) {
-		strcat(mensaje, "Choque pared \r\n");
+		/*mensaje[0] = '\0';*/
+		sprintf(mensaje, "Choque pared %d");
+		strcat(mensaje, "\r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
 
 void envio_llegada(void) {
+	if (uart_llegada == 0){
+		mensaje[0] = '\0';
 		strcat(mensaje, "Llegue a la meta \r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+		uart_llegada = 1;
+	}
 }
 
 void envio_casilla_n(uint8_t casilla_n) {
-	sprintf(mensaje, "%d", casilla_n);
-	strcat(mensaje, "Siguiente casilla: \r\n");
+	mensaje[0] = '\0';
+	sprintf(mensaje, "Siguiente casilla: %d", casilla_n);
+	strcat(mensaje, "\r\n");
 	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 	
 
 }
+void envio_contador(uint8_t contador_aux) {
+	mensaje[0] = '\0';
+	sprintf(mensaje, "%d", contador_aux);
+	strcat(mensaje, "\r\n");
+	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+}
+
+
 
 /* USER CODE END 4 */
 

@@ -181,6 +181,7 @@ void SystemInit(void)
 #endif /* USER_VECT_TAB_ADDRESS */
 }
 
+
 /**
    * @brief  Update SystemCoreClock variable according to Clock Register Values.
   *         The SystemCoreClock variable contains the core clock (HCLK), it can
