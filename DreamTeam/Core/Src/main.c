@@ -64,6 +64,7 @@
 #define tiempo_mini 150
 #define tiempo_rebotes 30
 #define tiempo_muerto_retroceso 100
+#define tiempo_sin_encontrar_pared_o_linea 2500
 
 #define cant_casilleros 16
 
@@ -111,6 +112,10 @@ volatile uint8_t filtrado_pared = 0;
 volatile uint32_t tiempo_inicio_2 = 0;
 volatile uint8_t solicitud_linea = 0;
 volatile uint8_t filtrado_linea = 0;
+
+volatile uint32_t tiempo_inicio_3 = 0;
+volatile uint8_t flag_pared = 0;
+volatile uint8_t flag_pared_2 = 0;
 
 uint16_t dma_buffer[64];
 
@@ -217,8 +222,6 @@ int main(void) {
 	pared[4] = pared[8] = 4; //solo este
 	pared[5] = pared[6] = pared[9] = pared[10] = 0;
 
-
-
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET); // INICIALIZACION EN AVANZAR
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
@@ -275,10 +278,10 @@ int main(void) {
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
 			envio_llegada();
-			
+
 			break;
 		case 11:
-			eliminar_repetidos(camino_solucion,contador_casillas);
+			eliminar_repetidos(camino_solucion, contador_casillas);
 			contador_casillas = contador_casillas - 1;
 			prueba = 12;
 			break;
@@ -565,26 +568,33 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 
-void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas) {
-    for (int i = 0; i < contador_casillas - 1; i++) {
-        for (int j = i + 1; j < contador_casillas; j++) {
-            if (camino_solucion[i] == camino_solucion[j]) {
-                // Se encontró repetido: eliminar todo entre i+1 y j inclusive
-                int cantidad_a_eliminar = j - i;
-
-                for (int k = j; k < contador_casillas; k++) {
-                    camino_solucion[k - cantidad_a_eliminar] = camino_solucion[k];
-                }
-
-                contador_casillas =contador_casillas - cantidad_a_eliminar;
-                i = -1;  // Reiniciar para volver a analizar todo desde el inicio
-                break;
-            }
-        }
-    }
-	
+void detecte_pared_por_tiempo(void) {
+	uint32_t tiempo_actual_3 = HAL_GetTick();
+	if (tiempo_sin_encontrar_pared_o_linea <= (tiempo_actual_3 - tiempo_inicio_3)) {
+		solicitud_pared = 1;
+		flag_pared_2 = 0;
+	}
 }
 
+void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas) {
+	for (int i = 0; i < contador_casillas - 1; i++) {
+		for (int j = i + 1; j < contador_casillas; j++) {
+			if (camino_solucion[i] == camino_solucion[j]) {
+				// Se encontró repetido: eliminar todo entre i+1 y j inclusive
+				int cantidad_a_eliminar = j - i;
+
+				for (int k = j; k < contador_casillas; k++) {
+					camino_solucion[k - cantidad_a_eliminar] = camino_solucion[k];
+				}
+
+				contador_casillas = contador_casillas - cantidad_a_eliminar;
+				i = -1;  // Reiniciar para volver a analizar todo desde el inicio
+				break;
+			}
+		}
+	}
+
+}
 
 void de_reversa_mami(void) { //codigo para ir de la casilla 15 a la 0... muy chiche
 
@@ -644,7 +654,9 @@ void prueba_avanzar(void) {
 void programa_principal(void) {
 	correccion_avanzar();
 	girando = 0;
+	flag_pared = 0; // en realidad es flag pared o linea
 	if (solicitud_linea == 1) { //cambio de casilla
+		flag_pared = 1;
 		contador_giros = 0;
 		contador_casillas = contador_casillas + 1;
 		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
@@ -660,6 +672,7 @@ void programa_principal(void) {
 		solicitud_linea = 0;
 	}
 	if (solicitud_pared == 1) {
+		flag_pared = 1; // en realidad es flag pared o linea
 		girando = 1;
 		envio_pared();
 		act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
@@ -672,6 +685,13 @@ void programa_principal(void) {
 		ejecutarGiro(giro); //giro y me voy del if
 		girando = 0;
 		solicitud_pared = 0;
+	}
+	if ((flag_pared == 0) && (flag_pared_2 == 0)) {
+		tiempo_inicio_3 = HAL_GetTick();
+		flag_pared_2 = 1;
+	}
+	if (flag_pared_2 == 1) {
+		detecte_pared_por_tiempo();
 	}
 	if (filtrado_pared == 1) {
 		filtrado_pared_funcion();
@@ -765,7 +785,7 @@ void correccion_avanzar(void) {
 		apagar_derecha();  // apagar motor derecho
 	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
 		apagar_izquierda();  //apaga motor izquierdo
-	} else if (( sensor_izq_avg <margen_i) && (sensor_der_avg < margen_d)) {
+	} else if ((sensor_izq_avg < margen_i) && (sensor_der_avg < margen_d)) {
 		apagar_derecha();
 	} else {
 		avanzar();
@@ -819,14 +839,15 @@ void ejecutarGiro(uint8_t giro) {
 			contador_giros = contador_giros + 1;
 			setMotorIzquierdo(avance);
 			setMotorDerecho(avance);
-			HAL_Delay(tiempo_muerto_avanzar);;
+			HAL_Delay(tiempo_muerto_avanzar);
+			;
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
 			HAL_Delay(tiempo_giro90_der);
-/*			mini_avance();
-			HAL_Delay(tiempo_muerto);
-			HAL_Delay(tiempo_muerto);
-*/
+			/*			mini_avance();
+			 HAL_Delay(tiempo_muerto);
+			 HAL_Delay(tiempo_muerto);
+			 */
 		} else {
 			contador_giros = contador_giros + 1;
 			mini_retroceso();
@@ -846,10 +867,10 @@ void ejecutarGiro(uint8_t giro) {
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_giro90_izq);
-/*			mini_avance();
-			HAL_Delay(tiempo_muerto);
-			HAL_Delay(tiempo_muerto);
-*/
+			/*			mini_avance();
+			 HAL_Delay(tiempo_muerto);
+			 HAL_Delay(tiempo_muerto);
+			 */
 		} else {
 			contador_giros = contador_giros + 1;
 			HAL_Delay(tiempo_muerto_avanzar);
@@ -857,8 +878,8 @@ void ejecutarGiro(uint8_t giro) {
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_giro90_2);
-/*			mini_avance();
- */
+			/*			mini_avance();
+			 */
 		}
 		break;
 
@@ -960,11 +981,10 @@ void act_pesos(uint8_t *pared, uint8_t *peso) {
 
 uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual) {
 	uint8_t minimo_peso = 15;
-	if (ubicacion == 15){
+	if (ubicacion == 15) {
 		casilla_n = 15;
 		return casilla_n;
-	}
-		else
+	} else
 		switch (orientacion_actual) {
 		case norte:
 			if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
@@ -1049,10 +1069,10 @@ uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, ui
 		default:
 			return 100;
 		}
-	}
+}
 void filtrado_pared_funcion(void) {
 	uint32_t tiempo_actual = HAL_GetTick();
-	if (200 <= (tiempo_actual - tiempo_inicio) /*&& (girando == 0)*/ ) {
+	if (200 <= (tiempo_actual - tiempo_inicio) /*&& (girando == 0)*/) {
 		GPIO_PinState estado_sensor = HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port,
 		sensor_frontal_Pin);
 		if (GPIO_PIN_RESET == estado_sensor) {
@@ -1093,13 +1113,13 @@ void envio_ubicacion(uint8_t ubicacion, uint8_t casilla_n) {
 }
 
 void envio_pared(void) {
-		strcat(mensaje, "Choque pared \r\n");
-		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+	strcat(mensaje, "Choque pared \r\n");
+	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
 
 void envio_llegada(void) {
-		strcat(mensaje, "Llegue a la meta \r\n");
-		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+	strcat(mensaje, "Llegue a la meta \r\n");
+	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
 void envio_casilla_n(uint8_t casilla_n) {
 	sprintf(mensaje, "%d", casilla_n);
