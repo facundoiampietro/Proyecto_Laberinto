@@ -55,8 +55,11 @@
 #define v_media_der 27500
 #define v_media 32000
 
-#define tiempo_giro90_der 520
-#define tiempo_giro90_izq 520
+#define tiempo_giro90_der_max 550
+#define tiempo_giro90_izq_max 550
+#define tiempo_giro90_der_min 490
+#define tiempo_giro90_izq_min 490
+
 #define tiempo_giro180 1020
 #define tiempo_giro90_2 900
 
@@ -104,6 +107,7 @@ uint16_t sensor_der_max = 0;
 uint16_t margen_i;
 uint16_t margen_d;
 uint8_t contador_aux= 0;
+bool ultima_rueda_apagada_d;
 
 uint8_t camino_solucion[32] = { 0 };
 uint8_t girando = 0;
@@ -838,8 +842,10 @@ void correccion_avanzar(void) {
 */
 	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
 			apagar_izquierda();  // apagar motor derecho
+			ultima_rueda_apagada_d = false; // la ultima correccion fue a la derecha
 		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
 			apagar_derecha();  //apaga motor izquierdo
+			ultima_rueda_apagada_d = true; //la ultima correccion no fue a la derecha (es decir, q fue a la izquierda)
 		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
 			avanzar();
 		} else {
@@ -859,14 +865,14 @@ void apagar_izquierda(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_min; // rueda a velocidad media
 }
 
 void apagar_derecha(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 	TIM3->CCR3 = v_min; // rueda a velocidad media (condigurable)
@@ -898,7 +904,12 @@ void ejecutarGiro(uint8_t giro) {
 			HAL_Delay(tiempo_muerto_avanzar);
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
-			HAL_Delay(tiempo_giro90_der);
+			if (ultima_rueda_apagada_d){
+				HAL_Delay(tiempo_giro90_der_min); //si ultima_rueda_apagada_d es true significa q la ultima rueda q se apago es la derecha, es decir q estará inclinado hacia la derecha. por lo q si quiere ir a la derecha, necesita un valor minimo de giro
+			}else{
+				HAL_Delay(tiempo_giro90_der_max); //caso opuesto al anterior, la ultima rueda q se apago es la izq, se inclina hacia de izquierda por lo q necesita un valor max
+			}
+
 		/*	mini_avance();
 			HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
@@ -921,7 +932,12 @@ void ejecutarGiro(uint8_t giro) {
 			HAL_Delay(tiempo_muerto_avanzar);
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
-			HAL_Delay(tiempo_giro90_izq);
+			if (ultima_rueda_apagada_d){
+				HAL_Delay(tiempo_giro90_izq_max); //si ultima_rueda_apagada_d es true significa q la ultima rueda q se apago es la derecha, es decir q estará inclinado hacia la derecha. por lo q si quiere ir a la izquierda, necesita un valor maximo de giro
+			}else{
+				HAL_Delay(tiempo_giro90_izq_min); //lo opuesto a lo anterior.
+			}
+
 	/*		mini_avance();
 			HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);

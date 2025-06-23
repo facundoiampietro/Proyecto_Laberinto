@@ -142,3 +142,39 @@ com.sun.jna.platform.win32.Win32Exception: El sistema no puede encontrar el arch
 
 !ENTRY org.eclipse.cdt.core 1 0 2025-06-23 14:13:57.225
 !MESSAGE Indexed 'DreamTeam' (25 sources, 127 headers) in 6.92 sec: 13,861 declarations; 70,025 references; 1 unresolved inclusions; 92 syntax errors; 240 unresolved names (0.29%)
+!SESSION 2025-06-23 15:03:20.708 -----------------------------------------------
+eclipse.buildId=Version 1.18.1
+java.version=21.0.3
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=es_AR
+Framework arguments:  C:\Users\sebas\Desktop\Laberinto\Proyecto_Laberinto\Proyecto_Laberinto\sin irq\Proyecto_Laberinto\Proyecto_Laberinto\DreamTeam\.project
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 C:\Users\sebas\Desktop\Laberinto\Proyecto_Laberinto\Proyecto_Laberinto\sin irq\Proyecto_Laberinto\Proyecto_Laberinto\DreamTeam\.project
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2025-06-23 15:03:49.371
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2025-06-23 15:03:49.372
+!MESSAGE Log4j2 initialized with config file C:\Users\sebas\Desktop\Laberinto\Proyecto_Laberinto\Proyecto_Laberinto\sin irq\Proyecto_Laberinto\Proyecto_Laberinto\.metadata\.log4j2.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2025-06-23 15:03:58.999
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY com.st.stm32cube.ide.mcu.externaltools 4 0 2025-06-23 15:03:59.153
+!MESSAGE HRESULT: -2147024894
+!STACK 0
+com.sun.jna.platform.win32.Win32Exception: El sistema no puede encontrar el archivo especificado.
+	at com.sun.jna.platform.win32.Advapi32Util.registryGetStringValue(Advapi32Util.java:741)
+	at com.sun.jna.platform.win32.Advapi32Util.registryGetStringValue(Advapi32Util.java:718)
+	at com.st.stm32cube.ide.mcu.externaltools.stlinkserver.win32.MCUWinExternalEnvResolver.getPath(MCUWinExternalEnvResolver.java:33)
+	at com.st.stm32cube.ide.mcu.externaltools.internal.registry.MCUExternalToolsTool.resolvePath(MCUExternalToolsTool.java:129)
+	at com.st.stm32cube.ide.mcu.externaltools.internal.registry.MCUExternalToolsTool.getLocation(MCUExternalToolsTool.java:270)
+	at com.st.stm32cube.ide.mcu.externaltools.internal.registry.MCUExternalToolsRegistry.getToolPath(MCUExternalToolsRegistry.java:235)
+	at com.st.stm32cube.ide.mcu.externaltools.internal.registry.MCUExternalToolsRegistry.getToolPath(MCUExternalToolsRegistry.java:223)
+	at com.st.stm32cube.ide.mcu.externaltools.internal.registry.MCUExternalToolsRegistry.getSTLinkServerLocation(MCUExternalToolsRegistry.java:255)
+	at com.st.stm32cube.ide.mcu.externaltools.MCUExternalToolsPlugin.getSTLinkServerLocation(MCUExternalToolsPlugin.java:147)
+	at com.st.stm32cube.ide.mcu.externaltools.ui.internal.startup.MCUExternalToolsStartup.doPrint(MCUExternalToolsStartup.java:110)
+	at com.st.stm32cube.ide.mcu.externaltools.ui.internal.startup.MCUExternalToolsStartup$1.run(MCUExternalToolsStartup.java:199)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.cdt.core 1 0 2025-06-23 15:04:02.247
+!MESSAGE Indexed 'DreamTeam' (25 sources, 127 headers) in 2.88 sec: 13,861 declarations; 70,044 references; 1 unresolved inclusions; 92 syntax errors; 240 unresolved names (0.29%)
