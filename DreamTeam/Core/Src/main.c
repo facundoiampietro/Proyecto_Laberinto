@@ -1129,6 +1129,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n) {
 	if (casilla_n == ubicacion){
+		mensaje[0] = '\0';
 		sprintf(mensaje, "Ubicacion: %d", ubicacion);
 		strcat(mensaje, "\r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
@@ -1136,8 +1137,8 @@ void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n) {
 
 }
 void envio_pared(void) {
-		/*mensaje[0] = '\0';*/
-		sprintf(mensaje, "Choque pared %d");
+		mensaje[0] = '\0';
+		sprintf(mensaje, "Choque pared");
 		strcat(mensaje, "\r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
@@ -1159,13 +1160,14 @@ void envio_casilla_n(uint8_t casilla_n) {
 	
 
 }
+/*
 void envio_contador(uint8_t contador_aux) {
 	mensaje[0] = '\0';
 	sprintf(mensaje, "%d", contador_aux);
 	strcat(mensaje, "\r\n");
 	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
-
+*/
 
 
 /* USER CODE END 4 */
