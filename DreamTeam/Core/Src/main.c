@@ -282,6 +282,19 @@ int main(void)
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
 			envio_llegada();
+
+			if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
+				HAL_Delay(40);
+				if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
+					ubicacion = 0;
+					envio_ubicacion(ubicacion, casilla_n);
+					prueba = 4;
+					HAL_Delay(5000);
+
+				}
+			}
+		//	HAL_Delay(5000); //escpera 5 segundos... suspenso
+		// prueba = 11;
 			break;
 		case 11:
 			eliminar_repetidos(camino_solucion,contador_casillas);
@@ -613,7 +626,8 @@ void de_reversa_mami(void) {//codigo para ir de la casilla 15 a la 0... muy chic
 	if (verificar_sensor()) { //cambio de casilla
 			contador_giros = 0;
 			contador_casillas = contador_casillas - 1;
-			ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+			ubicacion = casilla_n = camino_solucion[contador_casillas];
+			envio_ubicacion(ubicacion, casilla_n);
 			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
@@ -696,6 +710,7 @@ void programa_principal(void) {
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
 			ejecutarGiro(giro); //giro y me voy del if
+			camino_solucion[contador_casillas] = ubicacion;
 		}
 	if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin)) {
 		HAL_Delay(tiempo_rebotes);
@@ -715,8 +730,8 @@ void programa_principal(void) {
 		}
 	}
 	if (ubicacion == 15) {
-		prueba = 10;
-	}
+						prueba = 10;
+					}
 }
 void error(void) {      //CUANDO HAY ERROR RETROCEDE INFINITAMENTE
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_SET);
@@ -800,9 +815,12 @@ void correccion_avanzar(void) {
 		apagar_derecha();  // apagar motor derecho
 	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
 		apagar_izquierda();  //apaga motor izquierdo
+	} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+		apagar_izquierda();
 	} else {
 		avanzar();
 	}
+
 }
 void avanzar(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
@@ -818,8 +836,8 @@ void apagar_izquierda(void) {
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
-	TIM3->CCR3 = v_min; // rueda a velocidad media (condigurable)
-	TIM3->CCR4 = 0; // rueda a velocidad media
+	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = v_min; // rueda a velocidad media
 }
 
 void apagar_derecha(void) {
@@ -827,8 +845,8 @@ void apagar_derecha(void) {
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
-	TIM3->CCR3 = 0; // rueda a velocidad media (condigurable)
-	TIM3->CCR4 = v_min; // rueda a velocidad media
+	TIM3->CCR3 = v_min; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = v_media_der; // rueda a velocidad media
 }
 
 void mini_retroceso(void) {
@@ -853,21 +871,20 @@ void ejecutarGiro(uint8_t giro) {
 			setMotorIzquierdo(avance);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_muerto_avanzar);
-			girando = 1;
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
 			HAL_Delay(tiempo_giro90_der);
-			mini_avance();
+/*			mini_avance();
 			HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
+*/
 		} else {
 			contador_giros = contador_giros + 1;
 			mini_retroceso();
-			girando = 1;
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
 			HAL_Delay(tiempo_giro90_2);
-			mini_avance();
+//			mini_avance();
 		}
 		break;
 	case izquierda:
@@ -876,31 +893,29 @@ void ejecutarGiro(uint8_t giro) {
 			setMotorIzquierdo(avance);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_muerto_avanzar);
-			girando = 1;
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_giro90_izq);
-			mini_avance();
+/*			mini_avance();
 			HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
+*/
 		} else {
 			contador_giros = contador_giros + 1;
 			HAL_Delay(tiempo_muerto_avanzar);
-			girando = 1;
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_giro90_2);
-			mini_avance();
+//			mini_avance();
 		}
 		break;
 
 	case giro_180:
 		contador_giros = contador_giros + 1;
-		girando = 1;
 		setMotorIzquierdo(avance);
 		setMotorDerecho(retroceso);
 		HAL_Delay(tiempo_giro180);
-		mini_avance();
+//		mini_avance();
 		break;
 
 	}
