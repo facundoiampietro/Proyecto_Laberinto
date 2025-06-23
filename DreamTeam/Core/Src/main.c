@@ -259,30 +259,26 @@ int main(void)
 		HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_RESET);
 		switch (prueba) {
 
-		case 0:
+		case 0:{
 			prueba_avanzar();
 			break;
-
-		case 3:
-			ubicacion = 0;
-			prueba = 4;
-			HAL_Delay(1000);
-			break;
-
-		case 4:
+		}
+		case 4:{
 			programa_principal();
 			break;
-
-		case 5:
+		}
+		case 5:{
 			ajuste_automatico();
 			break;
-
-		case 6:
+		}
+		case 6:{
 			sensor_izq_min = 32700;
-			sensor_der_min = 32700;
-			sensor_izq_max = 0;
-			sensor_der_max = 0;
-			prueba = 5;
+						sensor_der_min = 32700;
+						sensor_izq_max = 0;
+						sensor_der_max = 0;
+						prueba = 5;
+			break;
+		}
 		case 10:
 			TIM3->CCR3 = 0;
 			TIM3->CCR4 = 0;
@@ -302,11 +298,21 @@ int main(void)
 
 				}
 			} */
-		//	HAL_Delay(3000); //escpera 5 segundos... suspenso
-		 //prueba = 11;
+		HAL_Delay(3000); //escpera 5 segundos... suspenso
+		prueba = 11;
 			break;
 		case 11:
 			eliminar_repetidos(camino_solucion,contador_casillas);
+			contador_casillas = contador_casillas - 1;
+
+			contador_giros = 0;
+			ubicacion = casilla_n = camino_solucion[contador_casillas];
+			envio_ubicacion(ubicacion, casilla_n);
+			casilla_n = camino_solucion[contador_casillas]; //calcula la casilla a la que hay q ir
+			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
+			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+			orientacion_actual = orientacion_futura;  //actualizo la orientación
+			ejecutarGiro(giro); //giro y me voy del if
 			contador_casillas = contador_casillas - 1;
 			prueba = 12;
 			break;
@@ -634,14 +640,14 @@ void de_reversa_mami(void) {//codigo para ir de la casilla 15 a la 0... muy chic
 
 	if (verificar_sensor()) { //cambio de casilla
 			contador_giros = 0;
-			contador_casillas = contador_casillas - 1;
 			ubicacion = casilla_n = camino_solucion[contador_casillas];
 			envio_ubicacion(ubicacion, casilla_n);
-			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
+			casilla_n = camino_solucion[contador_casillas]; //calcula la casilla a la que hay q ir
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
 			ejecutarGiro(giro); //giro y me voy del if
+			contador_casillas = contador_casillas - 1;
 		}
 	if (ubicacion == 0)
 		prueba = 10;
@@ -728,7 +734,7 @@ void programa_principal(void) {
 			act_pesos(pared, peso);  //luego actualiza el peso
 			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
 			envio_casilla_n(casilla_n);
-			envio_contador(contador_aux);
+		//	envio_contador(contador_aux);
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
