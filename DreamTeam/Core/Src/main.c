@@ -71,7 +71,7 @@
 #define tiempo_giro90_izq_min 550
 
 #define tiempo_giro180 1020
-#define tiempo_giro90_2 900
+#define tiempo_giro90_2 650
 
 #define tiempo_muerto_avanzar 200
 #define tiempo_muerto 300

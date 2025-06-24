@@ -3419,7 +3419,7 @@ void ejecutarGiro(uint8_t giro) {
  8001c02:	2002      	movs	r0, #2
  8001c04:	f000 f898 	bl	8001d38 <setMotorDerecho>
 			HAL_Delay(tiempo_giro90_2);
- 8001c08:	f44f 7061 	mov.w	r0, #900	@ 0x384
+ 8001c08:	f240 208a 	movw	r0, #650	@ 0x28a
  8001c0c:	f000 ff8a 	bl	8002b24 <HAL_Delay>
 			mini_avance();
  8001c10:	f7ff ff9b 	bl	8001b4a <mini_avance>
@@ -3496,7 +3496,7 @@ void ejecutarGiro(uint8_t giro) {
  8001c84:	2001      	movs	r0, #1
  8001c86:	f000 f857 	bl	8001d38 <setMotorDerecho>
 			HAL_Delay(tiempo_giro90_2);
- 8001c8a:	f44f 7061 	mov.w	r0, #900	@ 0x384
+ 8001c8a:	f240 208a 	movw	r0, #650	@ 0x28a
  8001c8e:	f000 ff49 	bl	8002b24 <HAL_Delay>
 			mini_avance();
  8001c92:	f7ff ff5a 	bl	8001b4a <mini_avance>
