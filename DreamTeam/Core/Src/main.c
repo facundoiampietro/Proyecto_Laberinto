@@ -228,8 +228,8 @@ int main(void) {
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3); // Inicio de la modulación PWM, rueda izquierda
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); // Inicio de la modulación PWM, rueda derecha
-	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
-	TIM3->CCR4 = v_media_der; // rueda a velocidad media
+	TIM3->CCR3 = 0; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = 0; // rueda a velocidad media
 
 	HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_RESET);
@@ -270,6 +270,7 @@ int main(void) {
 			sensor_izq_max = 0;
 			sensor_der_max = 0;
 			prueba = 5;
+			break;
 		case 10:
 			TIM3->CCR3 = 0;
 			TIM3->CCR4 = 0;
@@ -652,7 +653,8 @@ void prueba_avanzar(void) {
 }
 
 void programa_principal(void) {
-	correccion_avanzar();
+	//correccion_avanzar();
+	avanzar();
 	girando = 0;
 	flag_pared = 0; // en realidad es flag pared o linea
 	if (solicitud_linea == 1) { //cambio de casilla
@@ -674,6 +676,9 @@ void programa_principal(void) {
 	if (solicitud_pared == 1) {
 		flag_pared = 1; // en realidad es flag pared o linea
 		girando = 1;
+		mini_avance();
+		mini_avance();
+		mini_avance();
 		envio_pared();
 		act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 		act_pesos(pared, peso);  //luego actualiza el peso
