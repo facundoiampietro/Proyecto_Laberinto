@@ -247,8 +247,8 @@ int main(void)
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3); // Inicio de la modulación PWM, rueda izquierda
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); // Inicio de la modulación PWM, rueda derecha
-	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
-	TIM3->CCR4 = v_media_der; // rueda a velocidad media
+	TIM3->CCR3 = v_min; // rueda a velocidad media (condigurable)
+	TIM3->CCR4 = v_min; // rueda a velocidad media
 
 	HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_RESET);
@@ -670,6 +670,7 @@ void de_reversa_mami(void) {//codigo para ir de la casilla 15 a la 0... muy chic
 		prueba = 10;
 }
 void ajuste_automatico(void) {
+
 	if ((sensor_der_min == 0) || (sensor_izq_min == 0)) {
 		sensor_der_min = 32000;
 		sensor_izq_min = 32000;
@@ -689,9 +690,9 @@ void ajuste_automatico(void) {
 	if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
 		HAL_Delay(40);
 		if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-			margen_d = ((sensor_der_max * 0.5) + (sensor_der_min * 0.5));
-			margen_i = ((sensor_izq_max * 0.5) + (sensor_izq_min * 0.5));
-			prueba = 3;
+			margen_d = ((sensor_der_max * 0.8) + (sensor_der_min * 0.2));
+			margen_i = ((sensor_izq_max * 0.8) + (sensor_izq_min * 0.2));
+			prueba = 4;
 		}
 	}
 }
@@ -704,7 +705,7 @@ void prueba_rapida(void) {
 		;
 }
 void prueba_avanzar(void) {
-	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
+	avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
 //	ejecutarGiro(izquierda);
 //	ejecutarGiro(adelante);
 
@@ -728,7 +729,8 @@ bool verificar_sensor(void) {
 }
 
 void programa_principal(void) {
-	correccion_avanzar();
+	//correccion_avanzar();
+	avanzar();
 	if (verificar_sensor()) { //cambio de casilla
 			contador_giros = 0;
 			contador_casillas = contador_casillas + 1;
@@ -746,7 +748,7 @@ void programa_principal(void) {
 		HAL_Delay(tiempo_rebotes);
 		if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET) {
 			envio_pared();
-			/*mini_avance();*/
+		//mini_avance();
 			act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 			act_pesos(pared, peso);  //luego actualiza el peso
 			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
@@ -842,24 +844,24 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) { // Rutina de antención
 	promediar(&dma_buffer[32]);
 }
 void correccion_avanzar(void) {
-	// corrección para el sensor izquierdo
+	// corrección para el sensor izquierdo //auto demian
 /*	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
-		apagar_derecha();  // apagar motor derecho
+		apagar_izquierda();  // apagar motor derecho
 	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
-		apagar_izquierda();  //apaga motor izquierdo
+		apagar_derecha();  //apaga motor izquierdo
 	} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
 		avanzar();
 	} else {
 		avanzar();
 	}
 */
-	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
+	if ((sensor_izq_avg > margen_i) && (margen_d > sensor_der_avg)) {
 			apagar_derecha();  // apagar motor derecho
 			ultima_rueda_apagada_d = false; // la ultima correccion fue a la derecha
-		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
+		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg > margen_d)) { // avanzar con ambos motores
 			apagar_izquierda();  //apaga motor izquierdo
 			ultima_rueda_apagada_d = true; //la ultima correccion no fue a la derecha (es decir, q fue a la izquierda)
-		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg > margen_d)){
 			avanzar();
 		} else {
 			avanzar();
@@ -878,14 +880,14 @@ void apagar_izquierda(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
 	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
 	TIM3->CCR4 = v_min; // rueda a velocidad media
 }
 
 void apagar_derecha(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_SET);
 	TIM3->CCR3 = v_min; // rueda a velocidad media (condigurable)
