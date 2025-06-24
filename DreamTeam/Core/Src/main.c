@@ -52,13 +52,23 @@
 #define v_max 63999
 #define v_min 0
 #define v_media_izq 32000
-#define v_media_der 27500
+#define v_media_der 34000
 #define v_media 32000
-
-#define tiempo_giro90_der_max 550
+/*
+ * #define v_media_izq 32000
+#define v_media_der 27500
+#define tiempo_giro90_der_max 550   //AUTITO DE DEMIAN
 #define tiempo_giro90_izq_max 550
 #define tiempo_giro90_der_min 490
 #define tiempo_giro90_izq_min 490
+
+#define tiempo_giro180 1020
+#define tiempo_giro90_2 900
+*/
+#define tiempo_giro90_der_max 600  //AUTITO DEL NONO
+#define tiempo_giro90_izq_max 600
+#define tiempo_giro90_der_min 550
+#define tiempo_giro90_izq_min 550
 
 #define tiempo_giro180 1020
 #define tiempo_giro90_2 900
@@ -844,10 +854,10 @@ void correccion_avanzar(void) {
 	}
 */
 	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
-			apagar_izquierda();  // apagar motor derecho
+			apagar_derecha();  // apagar motor derecho
 			ultima_rueda_apagada_d = false; // la ultima correccion fue a la derecha
 		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
-			apagar_derecha();  //apaga motor izquierdo
+			apagar_izquierda();  //apaga motor izquierdo
 			ultima_rueda_apagada_d = true; //la ultima correccion no fue a la derecha (es decir, q fue a la izquierda)
 		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
 			avanzar();
@@ -969,10 +979,10 @@ void ejecutarGiro(uint8_t giro) {
 /*
 	 if ((giro == izquierda) || (giro == derecha) || (giro == giro_180)){  // si giro, verifico si tiene algun sensor cerca luego de avanzar un poco, en ese caso, corrige nuevamente por 200 milisegundos
 		 if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
-		 			apagar_izquierda();  // apagar motor derecho
+		 			apagar_derechaa();  // apagar motor derecho
 		 			HAL_Delay(tiempo_correccion_despues_del_giro);
 		 		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
-		 			apagar_derecha();  //apaga motor izquierdo
+		 			apagar_izquierda();  //apaga motor izquierdo
 		 			HAL_Delay(tiempo_correccion_despues_del_giro);
 		 		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
 		 			avanzar();

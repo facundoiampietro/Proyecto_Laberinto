@@ -1163,7 +1163,7 @@ int main(void)
  8000d0e:	63da      	str	r2, [r3, #60]	@ 0x3c
 	TIM3->CCR4 = v_media_der; // rueda a velocidad media
  8000d10:	4b57      	ldr	r3, [pc, #348]	@ (8000e70 <main+0x2b8>)
- 8000d12:	f646 326c 	movw	r2, #27500	@ 0x6b6c
+ 8000d12:	f248 42d0 	movw	r2, #34000	@ 0x84d0
  8000d16:	641a      	str	r2, [r3, #64]	@ 0x40
 
 	HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_RESET);
@@ -3262,8 +3262,8 @@ void correccion_avanzar(void) {
  8001af2:	b29b      	uxth	r3, r3
  8001af4:	429a      	cmp	r2, r3
  8001af6:	d205      	bcs.n	8001b04 <correccion_avanzar+0x2c>
-			apagar_izquierda();  // apagar motor derecho
- 8001af8:	f000 f860 	bl	8001bbc <apagar_izquierda>
+			apagar_derecha();  // apagar motor derecho
+ 8001af8:	f000 f888 	bl	8001c0c <apagar_derecha>
 			ultima_rueda_apagada_d = false; // la ultima correccion fue a la derecha
  8001afc:	4b1a      	ldr	r3, [pc, #104]	@ (8001b68 <correccion_avanzar+0x90>)
  8001afe:	2200      	movs	r2, #0
@@ -3284,8 +3284,8 @@ void correccion_avanzar(void) {
  8001b1a:	881b      	ldrh	r3, [r3, #0]
  8001b1c:	429a      	cmp	r2, r3
  8001b1e:	d205      	bcs.n	8001b2c <correccion_avanzar+0x54>
-			apagar_derecha();  //apaga motor izquierdo
- 8001b20:	f000 f874 	bl	8001c0c <apagar_derecha>
+			apagar_izquierda();  //apaga motor izquierdo
+ 8001b20:	f000 f84c 	bl	8001bbc <apagar_izquierda>
 			ultima_rueda_apagada_d = true; //la ultima correccion no fue a la derecha (es decir, q fue a la izquierda)
  8001b24:	4b10      	ldr	r3, [pc, #64]	@ (8001b68 <correccion_avanzar+0x90>)
  8001b26:	2201      	movs	r2, #1
@@ -3353,7 +3353,7 @@ void avanzar(void) {
  8001ba6:	63da      	str	r2, [r3, #60]	@ 0x3c
 	TIM3->CCR4 = v_media_der; // rueda a velocidad media
  8001ba8:	4b03      	ldr	r3, [pc, #12]	@ (8001bb8 <avanzar+0x4c>)
- 8001baa:	f646 326c 	movw	r2, #27500	@ 0x6b6c
+ 8001baa:	f248 42d0 	movw	r2, #34000	@ 0x84d0
  8001bae:	641a      	str	r2, [r3, #64]	@ 0x40
 }
  8001bb0:	bf00      	nop
@@ -3432,7 +3432,7 @@ void apagar_derecha(void) {
  8001c44:	63da      	str	r2, [r3, #60]	@ 0x3c
 	TIM3->CCR4 = v_media_der; // rueda a velocidad media
  8001c46:	4b04      	ldr	r3, [pc, #16]	@ (8001c58 <apagar_derecha+0x4c>)
- 8001c48:	f646 326c 	movw	r2, #27500	@ 0x6b6c
+ 8001c48:	f248 42d0 	movw	r2, #34000	@ 0x84d0
  8001c4c:	641a      	str	r2, [r3, #64]	@ 0x40
 }
  8001c4e:	bf00      	nop
@@ -3536,12 +3536,12 @@ void ejecutarGiro(uint8_t giro) {
  8001cfc:	2b00      	cmp	r3, #0
  8001cfe:	d004      	beq.n	8001d0a <ejecutarGiro+0x76>
 				HAL_Delay(tiempo_giro90_der_min); //si ultima_rueda_apagada_d es true significa q la ultima rueda q se apago es la derecha, es decir q estará inclinado hacia la derecha. por lo q si quiere ir a la derecha, necesita un valor minimo de giro
- 8001d00:	f44f 70f5 	mov.w	r0, #490	@ 0x1ea
+ 8001d00:	f240 2026 	movw	r0, #550	@ 0x226
  8001d04:	f000 ffa4 	bl	8002c50 <HAL_Delay>
  8001d08:	e003      	b.n	8001d12 <ejecutarGiro+0x7e>
 			}else{
 				HAL_Delay(tiempo_giro90_der_max); //caso opuesto al anterior, la ultima rueda q se apago es la izq, se inclina hacia de izquierda por lo q necesita un valor max
- 8001d0a:	f240 2026 	movw	r0, #550	@ 0x226
+ 8001d0a:	f44f 7016 	mov.w	r0, #600	@ 0x258
  8001d0e:	f000 ff9f 	bl	8002c50 <HAL_Delay>
 			}
 
@@ -3612,12 +3612,12 @@ void ejecutarGiro(uint8_t giro) {
  8001d7c:	2b00      	cmp	r3, #0
  8001d7e:	d004      	beq.n	8001d8a <ejecutarGiro+0xf6>
 				HAL_Delay(tiempo_giro90_izq_max); //si ultima_rueda_apagada_d es true significa q la ultima rueda q se apago es la derecha, es decir q estará inclinado hacia la derecha. por lo q si quiere ir a la izquierda, necesita un valor maximo de giro
- 8001d80:	f240 2026 	movw	r0, #550	@ 0x226
+ 8001d80:	f44f 7016 	mov.w	r0, #600	@ 0x258
  8001d84:	f000 ff64 	bl	8002c50 <HAL_Delay>
  8001d88:	e003      	b.n	8001d92 <ejecutarGiro+0xfe>
 			}else{
 				HAL_Delay(tiempo_giro90_izq_min); //lo opuesto a lo anterior.
- 8001d8a:	f44f 70f5 	mov.w	r0, #490	@ 0x1ea
+ 8001d8a:	f240 2026 	movw	r0, #550	@ 0x226
  8001d8e:	f000 ff5f 	bl	8002c50 <HAL_Delay>
 			}
 
