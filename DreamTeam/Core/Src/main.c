@@ -50,7 +50,7 @@
 #define freno      0b00
 
 #define v_max 63999
-#define v_min 32000
+#define v_min 0
 #define v_media_izq 32000
 #define v_media_der 27500
 #define v_media 32000
@@ -68,6 +68,7 @@
 #define tiempo_mini 150
 #define tiempo_rebotes 20
 #define tiempo_muerto_retroceso 100
+#define tiempo_correccion_despues_del_giro 200
 
 #define cant_casilleros 16
 
@@ -317,7 +318,9 @@ int main(void)
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
 			ejecutarGiro(giro); //giro y me voy del if
+
 			contador_casillas = contador_casillas - 1;
+
 			prueba = 12;
 			break;
 		case 12:
@@ -835,7 +838,7 @@ void correccion_avanzar(void) {
 	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
 		apagar_izquierda();  //apaga motor izquierdo
 	} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
-		apagar_izquierda();
+		avanzar();
 	} else {
 		avanzar();
 	}
@@ -910,8 +913,8 @@ void ejecutarGiro(uint8_t giro) {
 				HAL_Delay(tiempo_giro90_der_max); //caso opuesto al anterior, la ultima rueda q se apago es la izq, se inclina hacia de izquierda por lo q necesita un valor max
 			}
 
-		/*	mini_avance();
-			HAL_Delay(tiempo_muerto);
+			mini_avance();
+			/*	HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
 */
 		} else {
@@ -920,7 +923,7 @@ void ejecutarGiro(uint8_t giro) {
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
 			HAL_Delay(tiempo_giro90_2);
-//			mini_avance();
+			mini_avance();
 		}
 		break;
 	case izquierda:
@@ -938,8 +941,8 @@ void ejecutarGiro(uint8_t giro) {
 				HAL_Delay(tiempo_giro90_izq_min); //lo opuesto a lo anterior.
 			}
 
-	/*		mini_avance();
-			HAL_Delay(tiempo_muerto);
+			mini_avance();
+			/*		HAL_Delay(tiempo_muerto);
 			HAL_Delay(tiempo_muerto);
 */
 		} else {
@@ -948,7 +951,7 @@ void ejecutarGiro(uint8_t giro) {
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
 			HAL_Delay(tiempo_giro90_2);
-//			mini_avance();
+			mini_avance();
 		}
 		break;
 
@@ -962,6 +965,21 @@ void ejecutarGiro(uint8_t giro) {
 		break;
 
 	}
+
+/*
+	 if ((giro == izquierda) || (giro == derecha) || (giro == giro_180)){  // si giro, verifico si tiene algun sensor cerca luego de avanzar un poco, en ese caso, corrige nuevamente por 200 milisegundos
+		 if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
+		 			apagar_izquierda();  // apagar motor derecho
+		 			HAL_Delay(tiempo_correccion_despues_del_giro);
+		 		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
+		 			apagar_derecha();  //apaga motor izquierdo
+		 			HAL_Delay(tiempo_correccion_despues_del_giro);
+		 		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+		 			avanzar();
+		 		}
+	 }
+*/
+
 }
 
 void setMotorIzquierdo(uint8_t modo) {
