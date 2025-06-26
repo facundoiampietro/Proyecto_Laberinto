@@ -1,0 +1,14 @@
+ubicacion
+orientacion_actual
+orientacion_futura
+casilla_n
+peso
+pared
+contador_casillas
+margen_i
+margen_d
+camino_solucion
+sensor_izq_min
+sensor_der_min
+sensor_izq_max
+sensor_der_max
