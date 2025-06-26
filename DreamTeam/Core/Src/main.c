@@ -56,15 +56,15 @@
 #define v_media 32000
 /*
  * #define v_media_izq 32000
-#define v_media_der 27500
-#define tiempo_giro90_der_max 550   //AUTITO DE DEMIAN
-#define tiempo_giro90_izq_max 550
-#define tiempo_giro90_der_min 490
-#define tiempo_giro90_izq_min 490
+ #define v_media_der 27500
+ #define tiempo_giro90_der_max 550   //AUTITO DE DEMIAN
+ #define tiempo_giro90_izq_max 550
+ #define tiempo_giro90_der_min 490
+ #define tiempo_giro90_izq_min 490
 
-#define tiempo_giro180 1020
-#define tiempo_giro90_2 900
-*/
+ #define tiempo_giro180 1020
+ #define tiempo_giro90_2 900
+ */
 #define tiempo_giro90_der_max 600  //AUTITO DEL NONO
 #define tiempo_giro90_izq_max 600
 #define tiempo_giro90_der_min 550
@@ -110,21 +110,18 @@ uint8_t pared[cant_casilleros];
 uint8_t contador_casillas = 0;
 uint8_t prueba;
 uint8_t contador_giros = 0;
-uint8_t uart_llegada =0;
+uint8_t uart_llegada = 0;
 uint16_t sensor_izq_min = 32700;
 uint16_t sensor_der_min = 32700;
 uint16_t sensor_izq_max = 0;
 uint16_t sensor_der_max = 0;
 uint16_t margen_i;
 uint16_t margen_d;
-uint8_t contador_aux= 0;
+uint8_t contador_aux = 0;
 bool ultima_rueda_apagada_d;
 
 uint8_t camino_solucion[32] = { 0 };
 uint8_t girando = 0;
-volatile uint32_t tiempo_inicio = 0;
-volatile uint8_t solicitud_pared = 0;
-volatile uint8_t filtrado_pared = 0;
 
 volatile uint32_t tiempo_inicio_2 = 0;
 volatile uint8_t solicitud_linea = 0;
@@ -171,11 +168,12 @@ void mini_retroceso(void);
 void ajuste_automatico(void);
 void mini_avance(void);
 void de_reversa_mami(void);
-void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n);
+void envio_ubicacion(uint8_t ubicacion, uint8_t casilla_n);
 void envio_pared(void);
 void envio_llegada(void);
 void envio_casilla_n(uint8_t casilla_n);
 void envio_contador(uint8_t contador_aux);
+void filtrado_linea_funcion(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -184,39 +182,38 @@ void envio_contador(uint8_t contador_aux);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_TIM3_Init();
-  MX_UART5_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_ADC1_Init();
+	MX_TIM3_Init();
+	MX_UART5_Init();
+	/* USER CODE BEGIN 2 */
 
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) dma_buffer, 64);
 
@@ -259,39 +256,38 @@ int main(void)
 	uart_llegada = 0;
 
 	prueba = 6; //Aca se elige que programa queremos que se realice
-  /* USER CODE END 2 */
+	/* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1) {
-    /* USER CODE END WHILE */
+		/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+		/* USER CODE BEGIN 3 */
 
-		HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(led_naranja_GPIO_Port, led_naranja_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_RESET);
 		switch (prueba) {
 
-		case 0:{
+		case 0: {
 			prueba_avanzar();
 			break;
 		}
-		case 4:{
+		case 4: {
+			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_RESET);
 			programa_principal();
 			break;
 		}
-		case 5:{
+		case 5: {
+			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
 			ajuste_automatico();
 			break;
 		}
-		case 6:{
+		case 6: {
 			sensor_izq_min = 32700;
-						sensor_der_min = 32700;
-						sensor_izq_max = 0;
-						sensor_der_max = 0;
-						prueba = 5;
+			sensor_der_min = 32700;
+			sensor_izq_max = 0;
+			sensor_der_max = 0;
+			prueba = 5;
 			break;
 		}
 		case 10:
@@ -302,22 +298,22 @@ int main(void)
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
 			envio_llegada();
-/*
-			if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-				HAL_Delay(40);
-				if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-					ubicacion = 0;
-					envio_ubicacion(ubicacion, casilla_n);
-					prueba = 4;
-					HAL_Delay(5000);
+			/*
+			 if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
+			 HAL_Delay(40);
+			 if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
+			 ubicacion = 0;
+			 envio_ubicacion(ubicacion, casilla_n);
+			 prueba = 4;
+			 HAL_Delay(5000);
 
-				}
-			} */
-		HAL_Delay(3000); //escpera 5 segundos... suspenso
-		prueba = 11;
+			 }
+			 } */
+			HAL_Delay(3000); //escpera 5 segundos... suspenso
+			prueba = 11;
 			break;
 		case 11:
-			eliminar_repetidos(camino_solucion,contador_casillas);
+			eliminar_repetidos(camino_solucion, contador_casillas);
 			contador_casillas = contador_casillas - 1;
 
 			contador_giros = 0;
@@ -339,332 +335,325 @@ int main(void)
 		}
 
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+	/** Configure the main internal regulator output voltage
+	 */
+	__HAL_RCC_PWR_CLK_ENABLE();
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 50;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Initializes the RCC Oscillators according to the specified parameters
+	 * in the RCC_OscInitTypeDef structure.
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+	RCC_OscInitStruct.PLL.PLLM = 8;
+	RCC_OscInitStruct.PLL.PLLN = 50;
+	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+	RCC_OscInitStruct.PLL.PLLQ = 7;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+	/** Initializes the CPU, AHB and APB buses clocks
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
+		Error_Handler();
+	}
 }
 
 /**
-  * @brief ADC1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_ADC1_Init(void)
-{
+ * @brief ADC1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_ADC1_Init(void) {
 
-  /* USER CODE BEGIN ADC1_Init 0 */
+	/* USER CODE BEGIN ADC1_Init 0 */
 
-  /* USER CODE END ADC1_Init 0 */
+	/* USER CODE END ADC1_Init 0 */
 
-  ADC_ChannelConfTypeDef sConfig = {0};
+	ADC_ChannelConfTypeDef sConfig = { 0 };
 
-  /* USER CODE BEGIN ADC1_Init 1 */
+	/* USER CODE BEGIN ADC1_Init 1 */
 
-  /* USER CODE END ADC1_Init 1 */
+	/* USER CODE END ADC1_Init 1 */
 
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-  */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = ENABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 2;
-  hadc1.Init.DMAContinuousRequests = ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
-  if (HAL_ADC_Init(&hadc1) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+	 */
+	hadc1.Instance = ADC1;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
+	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+	hadc1.Init.ScanConvMode = ENABLE;
+	hadc1.Init.ContinuousConvMode = ENABLE;
+	hadc1.Init.DiscontinuousConvMode = DISABLE;
+	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	hadc1.Init.NbrOfConversion = 2;
+	hadc1.Init.DMAContinuousRequests = ENABLE;
+	hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+	if (HAL_ADC_Init(&hadc1) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_9;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+	 */
+	sConfig.Channel = ADC_CHANNEL_9;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_8;
-  sConfig.Rank = 2;
-  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN ADC1_Init 2 */
+	/** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+	 */
+	sConfig.Channel = ADC_CHANNEL_8;
+	sConfig.Rank = 2;
+	if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN ADC1_Init 2 */
 
-  /* USER CODE END ADC1_Init 2 */
+	/* USER CODE END ADC1_Init 2 */
 
 }
 
 /**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
+ * @brief TIM3 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM3_Init(void) {
 
-  /* USER CODE BEGIN TIM3_Init 0 */
+	/* USER CODE BEGIN TIM3_Init 0 */
 
-  /* USER CODE END TIM3_Init 0 */
+	/* USER CODE END TIM3_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
+	TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
+	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
+	TIM_OC_InitTypeDef sConfigOC = { 0 };
 
-  /* USER CODE BEGIN TIM3_Init 1 */
+	/* USER CODE BEGIN TIM3_Init 1 */
 
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 63999;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
+	/* USER CODE END TIM3_Init 1 */
+	htim3.Instance = TIM3;
+	htim3.Init.Prescaler = 0;
+	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim3.Init.Period = 63999;
+	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
+		Error_Handler();
+	}
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK) {
+		Error_Handler();
+	}
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 0;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM3_Init 2 */
 
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
+	/* USER CODE END TIM3_Init 2 */
+	HAL_TIM_MspPostInit(&htim3);
 
 }
 
 /**
-  * @brief UART5 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_UART5_Init(void)
-{
+ * @brief UART5 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_UART5_Init(void) {
 
-  /* USER CODE BEGIN UART5_Init 0 */
+	/* USER CODE BEGIN UART5_Init 0 */
 
-  /* USER CODE END UART5_Init 0 */
+	/* USER CODE END UART5_Init 0 */
 
-  /* USER CODE BEGIN UART5_Init 1 */
+	/* USER CODE BEGIN UART5_Init 1 */
 
-  /* USER CODE END UART5_Init 1 */
-  huart5.Instance = UART5;
-  huart5.Init.BaudRate = 115200;
-  huart5.Init.WordLength = UART_WORDLENGTH_8B;
-  huart5.Init.StopBits = UART_STOPBITS_1;
-  huart5.Init.Parity = UART_PARITY_NONE;
-  huart5.Init.Mode = UART_MODE_TX_RX;
-  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart5) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN UART5_Init 2 */
+	/* USER CODE END UART5_Init 1 */
+	huart5.Instance = UART5;
+	huart5.Init.BaudRate = 115200;
+	huart5.Init.WordLength = UART_WORDLENGTH_8B;
+	huart5.Init.StopBits = UART_STOPBITS_1;
+	huart5.Init.Parity = UART_PARITY_NONE;
+	huart5.Init.Mode = UART_MODE_TX_RX;
+	huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+	if (HAL_UART_Init(&huart5) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN UART5_Init 2 */
 
-  /* USER CODE END UART5_Init 2 */
+	/* USER CODE END UART5_Init 2 */
 
 }
 
 /**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void) {
 
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
+	/* DMA controller clock enable */
+	__HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+	/* DMA interrupt init */
+	/* DMA2_Stream0_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void)
-{
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_GPIO_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+	/* USER CODE BEGIN MX_GPIO_Init_1 */
 
-  /* USER CODE END MX_GPIO_Init_1 */
+	/* USER CODE END MX_GPIO_Init_1 */
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+	/* GPIO Ports Clock Enable */
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port, CS_I2C_SPI_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(CS_I2C_SPI_GPIO_Port, CS_I2C_SPI_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, m0_izquierda_Pin|m1_izquierda_Pin|m0_derecha_Pin|m1_derecha_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOB, m0_izquierda_Pin | m1_izquierda_Pin | m0_derecha_Pin | m1_derecha_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, led_verde_Pin|led_naranja_Pin|led_rojo_Pin|led_azul_Pin, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOD, led_verde_Pin | led_naranja_Pin | led_rojo_Pin | led_azul_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : CS_I2C_SPI_Pin */
-  GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(CS_I2C_SPI_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : CS_I2C_SPI_Pin */
+	GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(CS_I2C_SPI_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : boton_Pin */
-  GPIO_InitStruct.Pin = boton_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(boton_GPIO_Port, &GPIO_InitStruct);
+	/*Configure GPIO pin : boton_Pin */
+	GPIO_InitStruct.Pin = boton_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(boton_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : m0_izquierda_Pin m1_izquierda_Pin m0_derecha_Pin m1_derecha_Pin */
-  GPIO_InitStruct.Pin = m0_izquierda_Pin|m1_izquierda_Pin|m0_derecha_Pin|m1_derecha_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	/*Configure GPIO pins : m0_izquierda_Pin m1_izquierda_Pin m0_derecha_Pin m1_derecha_Pin */
+	GPIO_InitStruct.Pin = m0_izquierda_Pin | m1_izquierda_Pin | m0_derecha_Pin | m1_derecha_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : led_verde_Pin led_naranja_Pin led_rojo_Pin led_azul_Pin */
-  GPIO_InitStruct.Pin = led_verde_Pin|led_naranja_Pin|led_rojo_Pin|led_azul_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	/*Configure GPIO pins : led_verde_Pin led_naranja_Pin led_rojo_Pin led_azul_Pin */
+	GPIO_InitStruct.Pin = led_verde_Pin | led_naranja_Pin | led_rojo_Pin | led_azul_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : sensor_frontal_Pin sensor_linea_Pin */
-  GPIO_InitStruct.Pin = sensor_frontal_Pin|sensor_linea_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	/*Configure GPIO pin : sensor_frontal_Pin */
+	GPIO_InitStruct.Pin = sensor_frontal_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(sensor_frontal_GPIO_Port, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	/*Configure GPIO pin : sensor_linea_Pin */
+	GPIO_InitStruct.Pin = sensor_linea_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(sensor_linea_GPIO_Port, &GPIO_InitStruct);
 
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
-  /* USER CODE END MX_GPIO_Init_2 */
+	/* USER CODE BEGIN MX_GPIO_Init_2 */
+
+	/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
 
 void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas) {
-    for (int i = 0; i < contador_casillas - 1; i++) {
-        for (int j = i + 1; j < contador_casillas; j++) {
-            if (camino_solucion[i] == camino_solucion[j]) {
-                // Se encontró repetido: eliminar todo entre i+1 y j inclusive
-                int cantidad_a_eliminar = j - i;
+	for (int i = 0; i < contador_casillas - 1; i++) {
+		for (int j = i + 1; j < contador_casillas; j++) {
+			if (camino_solucion[i] == camino_solucion[j]) {
+				// Se encontró repetido: eliminar todo entre i+1 y j inclusive
+				int cantidad_a_eliminar = j - i;
 
-                for (int k = j; k < contador_casillas; k++) {
-                    camino_solucion[k - cantidad_a_eliminar] = camino_solucion[k];
-                }
+				for (int k = j; k < contador_casillas; k++) {
+					camino_solucion[k - cantidad_a_eliminar] = camino_solucion[k];
+				}
 
-                contador_casillas =contador_casillas - cantidad_a_eliminar;
-                i = -1;  // Reiniciar para volver a analizar todo desde el inicio
-                break;
-            }
-        }
-    }
-	
+				contador_casillas = contador_casillas - cantidad_a_eliminar;
+				i = -1;  // Reiniciar para volver a analizar todo desde el inicio
+				break;
+			}
+		}
+	}
+
 }
 
-void de_reversa_mami(void) {//codigo para ir de la casilla 15 a la 0... muy chiche
+void de_reversa_mami(void) {  //codigo para ir de la casilla 15 a la 0... muy chiche
 
-	if (verificar_sensor()) { //cambio de casilla
+	if (solicitud_linea == 1) { //cambio de casilla
 			contador_giros = 0;
-			ubicacion = casilla_n = camino_solucion[contador_casillas];
+			contador_casillas = contador_casillas + 1;
+			ubicacion = act_ubicacion(ubicacion, orientacion_actual);
 			envio_ubicacion(ubicacion, casilla_n);
 			casilla_n = camino_solucion[contador_casillas]; //calcula la casilla a la que hay q ir
+			envio_casilla_n(casilla_n);
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
 			ejecutarGiro(giro); //giro y me voy del if
-			contador_casillas = contador_casillas - 1;
+			camino_solucion[contador_casillas] = ubicacion;
+			solicitud_linea = 0;
+		}
+	if (filtrado_linea == 1) {
+			filtrado_linea_funcion();
 		}
 	if (ubicacion == 0)
 		prueba = 10;
@@ -690,9 +679,11 @@ void ajuste_automatico(void) {
 	if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
 		HAL_Delay(40);
 		if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-			margen_d = ((sensor_der_max * 0.8) + (sensor_der_min * 0.2));
-			margen_i = ((sensor_izq_max * 0.8) + (sensor_izq_min * 0.2));
+			margen_d = ((sensor_der_max * 0.5) + (sensor_der_min * 0.5));
+			margen_i = ((sensor_izq_max * 0.5) + (sensor_izq_min * 0.5));
 			prueba = 4;
+			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_RESET);
 		}
 	}
 }
@@ -709,7 +700,7 @@ void prueba_avanzar(void) {
 //	ejecutarGiro(izquierda);
 //	ejecutarGiro(adelante);
 
-		;
+	;
 }
 
 bool verificar_sensor(void) {
@@ -729,31 +720,34 @@ bool verificar_sensor(void) {
 }
 
 void programa_principal(void) {
-	//correccion_avanzar();
-	avanzar();
-	if (verificar_sensor()) { //cambio de casilla
-			contador_giros = 0;
-			contador_casillas = contador_casillas + 1;
-			ubicacion = act_ubicacion(ubicacion, orientacion_actual);
-			envio_ubicacion(ubicacion, casilla_n);
-			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
-			envio_casilla_n(casilla_n);
-			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
-			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+	correccion_avanzar();
+	//avanzar();
+	if (solicitud_linea == 1) { //cambio de casilla
+		contador_giros = 0;
+		contador_casillas = contador_casillas + 1;
+		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
+		envio_ubicacion(ubicacion, casilla_n);
+		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
+		envio_casilla_n(casilla_n);
+		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
+		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+		if (ubicacion != 15){
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
-			ejecutarGiro(giro); //giro y me voy del if
-			camino_solucion[contador_casillas] = ubicacion;
 		}
+		ejecutarGiro(giro); //giro y me voy del if
+		camino_solucion[contador_casillas] = ubicacion;
+		solicitud_linea = 0;
+	}
 	if (GPIO_PIN_RESET == HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin)) {
 		HAL_Delay(tiempo_rebotes);
 		if (HAL_GPIO_ReadPin(sensor_frontal_GPIO_Port, sensor_frontal_Pin) == GPIO_PIN_RESET) {
 			envio_pared();
-		//mini_avance();
+			//mini_avance();
 			act_pared(pared, ubicacion, orientacion_actual); //primero actualiza la pared encontrada
 			act_pesos(pared, peso);  //luego actualiza el peso
 			casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
 			envio_casilla_n(casilla_n);
-		//	envio_contador(contador_aux);
+			//	envio_contador(contador_aux);
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
 			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
@@ -763,9 +757,12 @@ void programa_principal(void) {
 			ejecutarGiro(giro); //giro y me voy del if
 		}
 	}
+	if (filtrado_linea == 1) {
+		filtrado_linea_funcion();
+	}
 	if (ubicacion == 15) {
-						prueba = 10;
-					}
+		prueba = 10;
+	}
 }
 void error(void) {      //CUANDO HAY ERROR RETROCEDE INFINITAMENTE
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_SET);
@@ -779,7 +776,6 @@ void error(void) {      //CUANDO HAY ERROR RETROCEDE INFINITAMENTE
 }
 
 uint8_t obtener_orientacion_futura(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
-
 	if (casilla_n == ubicacion + 1)
 		return oeste;
 	if (casilla_n == ubicacion - 1)
@@ -794,7 +790,9 @@ uint8_t obtener_orientacion_futura(uint8_t ubicacion, uint8_t casilla_n) { // De
 
 uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_futura) { // Calcula el giro que debe hacer el autito para pasar de su orientación actual a la deseada
 	int diferencia = (orientacion_futura - orientacion_actual + 4) % 4; //el %4 se queda con el resto de la divsion por 4
-
+	if (ubicacion == 15){
+		return adelante;
+	}
 	switch (diferencia) {
 	case 0:
 		return adelante;
@@ -845,27 +843,29 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) { // Rutina de antención
 }
 void correccion_avanzar(void) {
 	// corrección para el sensor izquierdo //auto demian
-/*	if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
-		apagar_izquierda();  // apagar motor derecho
-	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
-		apagar_derecha();  //apaga motor izquierdo
-	} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+		if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
+	 apagar_izquierda();  // apagar motor derecho
+	 } else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
+	 apagar_derecha();  //apaga motor izquierdo
+	 } else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+	 avanzar();
+	 } else {
+	 avanzar();
+	 }
+
+	/*
+	if ((sensor_izq_avg > margen_i) && (margen_d > sensor_der_avg)) {
+		apagar_derecha();  // apagar motor derecho
+		ultima_rueda_apagada_d = false; // la ultima correccion fue a la derecha
+	} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg > margen_d)) { // avanzar con ambos motores
+		apagar_izquierda();  //apaga motor izquierdo
+		ultima_rueda_apagada_d = true; //la ultima correccion no fue a la derecha (es decir, q fue a la izquierda)
+	} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg > margen_d)) {
 		avanzar();
 	} else {
 		avanzar();
 	}
-*/
-	if ((sensor_izq_avg > margen_i) && (margen_d > sensor_der_avg)) {
-			apagar_derecha();  // apagar motor derecho
-			ultima_rueda_apagada_d = false; // la ultima correccion fue a la derecha
-		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg > margen_d)) { // avanzar con ambos motores
-			apagar_izquierda();  //apaga motor izquierdo
-			ultima_rueda_apagada_d = true; //la ultima correccion no fue a la derecha (es decir, q fue a la izquierda)
-		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg > margen_d)){
-			avanzar();
-		} else {
-			avanzar();
-		}
+	*/
 }
 void avanzar(void) {
 	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_RESET);
@@ -906,6 +906,7 @@ void mini_avance(void) {
 }
 
 void ejecutarGiro(uint8_t giro) {
+
 	switch (giro) {
 	case adelante:
 		mini_avance(); //este es para q siga recto y no corrija mal
@@ -919,16 +920,16 @@ void ejecutarGiro(uint8_t giro) {
 			HAL_Delay(tiempo_muerto_avanzar);
 			setMotorIzquierdo(avance);
 			setMotorDerecho(retroceso);
-			if (ultima_rueda_apagada_d){
+			if (ultima_rueda_apagada_d) {
 				HAL_Delay(tiempo_giro90_der_min); //si ultima_rueda_apagada_d es true significa q la ultima rueda q se apago es la derecha, es decir q estará inclinado hacia la derecha. por lo q si quiere ir a la derecha, necesita un valor minimo de giro
-			}else{
+			} else {
 				HAL_Delay(tiempo_giro90_der_max); //caso opuesto al anterior, la ultima rueda q se apago es la izq, se inclina hacia de izquierda por lo q necesita un valor max
 			}
 
 			mini_avance();
 			/*	HAL_Delay(tiempo_muerto);
-			HAL_Delay(tiempo_muerto);
-*/
+			 HAL_Delay(tiempo_muerto);
+			 */
 		} else {
 			contador_giros = contador_giros + 1;
 			mini_retroceso();
@@ -947,16 +948,16 @@ void ejecutarGiro(uint8_t giro) {
 			HAL_Delay(tiempo_muerto_avanzar);
 			setMotorIzquierdo(retroceso);
 			setMotorDerecho(avance);
-			if (ultima_rueda_apagada_d){
+			if (ultima_rueda_apagada_d) {
 				HAL_Delay(tiempo_giro90_izq_max); //si ultima_rueda_apagada_d es true significa q la ultima rueda q se apago es la derecha, es decir q estará inclinado hacia la derecha. por lo q si quiere ir a la izquierda, necesita un valor maximo de giro
-			}else{
+			} else {
 				HAL_Delay(tiempo_giro90_izq_min); //lo opuesto a lo anterior.
 			}
 
 			mini_avance();
 			/*		HAL_Delay(tiempo_muerto);
-			HAL_Delay(tiempo_muerto);
-*/
+			 HAL_Delay(tiempo_muerto);
+			 */
 		} else {
 			contador_giros = contador_giros + 1;
 			HAL_Delay(tiempo_muerto_avanzar);
@@ -978,19 +979,19 @@ void ejecutarGiro(uint8_t giro) {
 
 	}
 
-/*
+	/*
 	 if ((giro == izquierda) || (giro == derecha) || (giro == giro_180)){  // si giro, verifico si tiene algun sensor cerca luego de avanzar un poco, en ese caso, corrige nuevamente por 200 milisegundos
-		 if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
-		 			apagar_derechaa();  // apagar motor derecho
-		 			HAL_Delay(tiempo_correccion_despues_del_giro);
-		 		} else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
-		 			apagar_izquierda();  //apaga motor izquierdo
-		 			HAL_Delay(tiempo_correccion_despues_del_giro);
-		 		} else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
-		 			avanzar();
-		 		}
+	 if ((sensor_izq_avg < margen_i) && (margen_d < sensor_der_avg)) {
+	 apagar_derechaa();  // apagar motor derecho
+	 HAL_Delay(tiempo_correccion_despues_del_giro);
+	 } else if ((margen_i < sensor_izq_avg) && (sensor_der_avg < margen_d)) { // avanzar con ambos motores
+	 apagar_izquierda();  //apaga motor izquierdo
+	 HAL_Delay(tiempo_correccion_despues_del_giro);
+	 } else if ((margen_i > sensor_izq_avg) && (sensor_der_avg < margen_d)){
+	 avanzar();
 	 }
-*/
+	 }
+	 */
 
 }
 
@@ -1081,106 +1082,101 @@ void act_pesos(uint8_t *pared, uint8_t *peso) {
 
 uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual) {
 	uint8_t minimo_peso = 15;
-	if (ubicacion == 15){
+	if (ubicacion == 15) {
 		casilla_n = 15;
 		return casilla_n;
-	}
-	else{
+	} else {
 
-	switch (orientacion_actual) {	//paredes de cada casilla (8=pared en norte, 4=pared en este, 2=pared en sur, 1=pared en oeste)
-	case norte:
-		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
-			minimo_peso = peso[ubicacion + 4];
-			casilla_n = ubicacion + 4;
-		}
-		if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
-			minimo_peso = peso[ubicacion + 1];
-			casilla_n = ubicacion + 1;
-		}
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
-			contador_aux = contador_aux + 1;
-			minimo_peso = peso[ubicacion - 1];
-			casilla_n = ubicacion - 1;
-		}
-		if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
-			minimo_peso = peso[ubicacion - 4];
-			casilla_n = ubicacion - 4;
-		}
-		return casilla_n;
-		break;
-	case sur:
-		if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
-			minimo_peso = peso[ubicacion - 4];
-			casilla_n = ubicacion - 4;
-		}
+		switch (orientacion_actual) {	//paredes de cada casilla (8=pared en norte, 4=pared en este, 2=pared en sur, 1=pared en oeste)
+		case norte:
+			if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
+				minimo_peso = peso[ubicacion + 4];
+				casilla_n = ubicacion + 4;
+			}
+			if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
+				minimo_peso = peso[ubicacion + 1];
+				casilla_n = ubicacion + 1;
+			}
+			if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
+				contador_aux = contador_aux + 1;
+				minimo_peso = peso[ubicacion - 1];
+				casilla_n = ubicacion - 1;
+			}
+			if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
+				minimo_peso = peso[ubicacion - 4];
+				casilla_n = ubicacion - 4;
+			}
+			return casilla_n;
+			break;
+		case sur:
+			if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
+				minimo_peso = peso[ubicacion - 4];
+				casilla_n = ubicacion - 4;
+			}
 
-		if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
-			minimo_peso = peso[ubicacion + 1];
-			casilla_n = ubicacion + 1;
-		}
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
-			minimo_peso = peso[ubicacion - 1];
-			casilla_n = ubicacion - 1;
-		}
+			if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
+				minimo_peso = peso[ubicacion + 1];
+				casilla_n = ubicacion + 1;
+			}
+			if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
+				minimo_peso = peso[ubicacion - 1];
+				casilla_n = ubicacion - 1;
+			}
 
-		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
-			minimo_peso = peso[ubicacion + 4];
-			casilla_n = ubicacion + 4;
-		}
-		return casilla_n;
-		break;
-	case oeste:
-		if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
-			minimo_peso = peso[ubicacion + 1];
-			casilla_n = ubicacion + 1;
-		}
-		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
-			minimo_peso = peso[ubicacion + 4];
-			casilla_n = ubicacion + 4;
-		}
+			if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
+				minimo_peso = peso[ubicacion + 4];
+				casilla_n = ubicacion + 4;
+			}
+			return casilla_n;
+			break;
+		case oeste:
+			if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
+				minimo_peso = peso[ubicacion + 1];
+				casilla_n = ubicacion + 1;
+			}
+			if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
+				minimo_peso = peso[ubicacion + 4];
+				casilla_n = ubicacion + 4;
+			}
 
-		if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
-			minimo_peso = peso[ubicacion - 4];
-			casilla_n = ubicacion - 4;
-		}
+			if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
+				minimo_peso = peso[ubicacion - 4];
+				casilla_n = ubicacion - 4;
+			}
 
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
-			minimo_peso = peso[ubicacion - 1];
-			casilla_n = ubicacion - 1;
+			if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
+				minimo_peso = peso[ubicacion - 1];
+				casilla_n = ubicacion - 1;
+			}
+			return casilla_n;
+			break;
+		case este:
+			if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
+				minimo_peso = peso[ubicacion - 1];
+				casilla_n = ubicacion - 1;
+			}
+			if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
+				minimo_peso = peso[ubicacion + 4];
+				casilla_n = ubicacion + 4;
+			}
+			if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
+				minimo_peso = peso[ubicacion - 4];
+				casilla_n = ubicacion - 4;
+			}
+			if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
+				minimo_peso = peso[ubicacion + 1];
+				casilla_n = ubicacion + 1;
+			}
+			return casilla_n;
+			break;
+		default:
+			return 100;
 		}
-		return casilla_n;
-		break;
-	case este:
-		if (((peso[ubicacion - 1] < minimo_peso) && ((pared[ubicacion] & 0x04) == 0) && !(ubicacion == 0 || ubicacion == 4 || ubicacion == 8 || ubicacion == 12))) {
-			minimo_peso = peso[ubicacion - 1];
-			casilla_n = ubicacion - 1;
-		}
-		if (((peso[ubicacion + 4] < minimo_peso) && ((pared[ubicacion] & 0x08) == 0) && (ubicacion + 4 < cant_casilleros))) {
-			minimo_peso = peso[ubicacion + 4];
-			casilla_n = ubicacion + 4;
-		}
-		if (((peso[ubicacion - 4] < minimo_peso) && ((pared[ubicacion] & 0x02) == 0) && (4 <= ubicacion))) {
-			minimo_peso = peso[ubicacion - 4];
-			casilla_n = ubicacion - 4;
-		}
-		if (((peso[ubicacion + 1] < minimo_peso) && ((pared[ubicacion] & 0x01) == 0) && !(ubicacion == 3 || ubicacion == 7 || ubicacion == 11 || ubicacion == 15))) { // el signo de admiracion niega y convierte en booleana ubicacion
-			minimo_peso = peso[ubicacion + 1];
-			casilla_n = ubicacion + 1;
-		}
-		return casilla_n;
-		break;
-	default:
-		return 100;
-	}
 	}
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-
-}
-
-void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n) {
-	if (casilla_n == ubicacion){
+void envio_ubicacion(uint8_t ubicacion, uint8_t casilla_n) {
+	if (casilla_n == ubicacion) {
 		mensaje[0] = '\0';
 		sprintf(mensaje, "Ubicacion: %d", ubicacion);
 		strcat(mensaje, "\r\n");
@@ -1189,14 +1185,14 @@ void envio_ubicacion(uint8_t ubicacion,uint8_t casilla_n) {
 
 }
 void envio_pared(void) {
-		mensaje[0] = '\0';
-		sprintf(mensaje, "Choque pared");
-		strcat(mensaje, "\r\n");
-		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+	mensaje[0] = '\0';
+	sprintf(mensaje, "Choque pared");
+	strcat(mensaje, "\r\n");
+	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
 }
 
 void envio_llegada(void) {
-	if (uart_llegada == 0){
+	if (uart_llegada == 0) {
 		mensaje[0] = '\0';
 		strcat(mensaje, "Llegue a la meta \r\n");
 		HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
@@ -1209,33 +1205,46 @@ void envio_casilla_n(uint8_t casilla_n) {
 	sprintf(mensaje, "Siguiente casilla: %d", casilla_n);
 	strcat(mensaje, "\r\n");
 	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
-	
 
+}
+void filtrado_linea_funcion(void) {
+	uint32_t tiempo_actual_2 = HAL_GetTick();
+	if (tiempo_rebotes <= (tiempo_actual_2 - tiempo_inicio_2)) {
+		GPIO_PinState estado_sensor_2 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
+		if (GPIO_PIN_RESET == estado_sensor_2) {
+			solicitud_linea = 1;
+		}
+		filtrado_linea = 0;
+	}
+}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if ((GPIO_Pin == sensor_linea_Pin) && (filtrado_linea == 0)) {
+		tiempo_inicio_2 = HAL_GetTick();
+		filtrado_linea = 1;
+	}
 }
 /*
-void envio_contador(uint8_t contador_aux) {
-	mensaje[0] = '\0';
-	sprintf(mensaje, "%d", contador_aux);
-	strcat(mensaje, "\r\n");
-	HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
-}
-*/
-
+ void envio_contador(uint8_t contador_aux) {
+ mensaje[0] = '\0';
+ sprintf(mensaje, "%d", contador_aux);
+ strcat(mensaje, "\r\n");
+ HAL_UART_Transmit(&huart5, (uint8_t*) mensaje, sizeof(mensaje), delay);
+ }
+ */
 
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
+	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1) {
 	}
-  /* USER CODE END Error_Handler_Debug */
+	/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
