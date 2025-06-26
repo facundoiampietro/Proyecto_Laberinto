@@ -1,4 +1,4 @@
-19:34:53 **** Incremental Build of configuration Debug for project DreamTeam ****
+19:40:34 **** Incremental Build of configuration Debug for project DreamTeam ****
 make -j4 all 
 arm-none-eabi-size  DreamTeam.elf 
    text	   data	    bss	    dec	    hex	filename
@@ -6,5 +6,5 @@ arm-none-eabi-size  DreamTeam.elf
 Finished building: default.size.stdout
  
 
-19:34:53 Build Finished. 0 errors, 0 warnings. (took 478ms)
+19:40:35 Build Finished. 0 errors, 0 warnings. (took 438ms)
 
