@@ -149,13 +149,12 @@ static void MX_UART5_Init(void);
 static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
 uint8_t obtener_orientacion_futura(uint8_t casilla_actual, uint8_t casilla_n);
-uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_futura);
+uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_futura, uint8_t ubicacioner);
 uint8_t act_ubicacion(uint8_t ubicacion, uint8_t orientacion_actual);
 void act_pesos(uint8_t *pared, uint8_t *peso);
 uint8_t act_pared(uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual);
 uint8_t calculo_minimo_peso(uint8_t *peso, uint8_t *pared, uint8_t ubicacion, uint8_t orientacion_actual);
 
-bool verificar_sensor(void);
 void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas);
 void de_reversa_mami(void);
 void correccion_avanzar(void);
@@ -166,11 +165,7 @@ void setMotorIzquierdo(uint8_t modo);
 void setMotorDerecho(uint8_t modo);
 void ejecutarGiro(uint8_t giro);
 void prueba_avanzar(void);
-void prueba_rapida(void);
-void prueba_casilla_n(void);
 void programa_principal(void);
-void prueba_post_relleno(void);
-void error(void);
 void mini_retroceso(void);
 void ajuste_automatico(void);
 void mini_avance(void);
@@ -267,7 +262,7 @@ int main(void)
 	ubicacion = 0;
 	uart_llegada = 0;
 
-	prueba = 6; //Aca se elige que programa queremos que se realice
+	prueba = 1; //Aca se elige que programa queremos que se realice
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -283,6 +278,16 @@ int main(void)
 			prueba_avanzar();
 			break;
 		}
+		case 1: {
+			contador_correcion = 0;
+			sensor_izq_min = 32700;
+			sensor_der_min = 32700;
+			sensor_izq_max = 0;
+			sensor_der_max = 0;
+			ubicacion = 0;
+			prueba = 5;
+			break;
+				}
 		case 4: {
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(led_verde_GPIO_Port, led_verde_Pin, GPIO_PIN_SET);
@@ -296,16 +301,7 @@ int main(void)
 			contador_correcion = 0;
 			break;
 		}
-		case 6: {
-			contador_correcion = 0;
-			sensor_izq_min = 32700;
-			sensor_der_min = 32700;
-			sensor_izq_max = 0;
-			sensor_der_max = 0;
-			ubicacion = 0;
-			prueba = 5;
-			break;
-		}
+
 		case 10:
 			contador_correcion = 0;
 			TIM3->CCR3 = 0;
@@ -315,34 +311,19 @@ int main(void)
 			HAL_GPIO_WritePin(led_rojo_GPIO_Port, led_rojo_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(led_azul_GPIO_Port, led_azul_Pin, GPIO_PIN_SET);
 			envio_llegada();
-			/*
 			 if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-			 HAL_Delay(40);
-			 if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
-			 ubicacion = 0;
-			 envio_ubicacion(ubicacion, casilla_n);
-			 prueba = 4;
-			 HAL_Delay(5000);
+				 HAL_Delay(40);
+				 if (HAL_GPIO_ReadPin(boton_GPIO_Port, boton_Pin) == GPIO_PIN_SET) {
+					 prueba = 11;
 
+				 }
 			 }
-			 } */
-			HAL_Delay(5000); //escpera 5 segundos... suspenso
-			prueba = 11;
 			break;
 		case 11:
 			eliminar_repetidos(camino_solucion, contador_casillas);
 			contador_casillas = contador_casillas - 1;
 			contador_giros = 0;
-			ubicacion =  act_ubicacion(ubicacion, orientacion_actual);
 			casilla_n = camino_solucion[contador_casillas];
-			envio_ubicacion(ubicacion, casilla_n);
-			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
-			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
-			orientacion_actual = orientacion_futura;  //actualizo la orientación
-			ejecutarGiro(giro); //giro y me voy del if
-
-			contador_casillas = contador_casillas - 1;
-
 			prueba = 12;
 			break;
 		case 12:
@@ -732,16 +713,16 @@ void eliminar_repetidos(uint8_t *camino_solucion, uint8_t contador_casillas) {
 }
 
 void de_reversa_mami(void) {  //codigo para ir de la casilla 15 a la 0... muy chiche
-
+	correccion_avanzar();
 	if (solicitud_linea == 1) { //cambio de casilla
 		contador_giros = 0;
-		contador_casillas = contador_casillas + 1;
+		contador_casillas = contador_casillas - 1;
 		ubicacion = act_ubicacion(ubicacion, orientacion_actual);
 		envio_ubicacion(ubicacion, casilla_n);
 		casilla_n = camino_solucion[contador_casillas]; //calcula la casilla a la que hay q ir
 		envio_casilla_n(casilla_n);
 		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
-		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+		giro = obtenerGiro(orientacion_actual, orientacion_futura, ubicacion); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 		orientacion_actual = orientacion_futura;  //actualizo la orientación
 		ejecutarGiro(giro); //giro y me voy del if
 		camino_solucion[contador_casillas] = ubicacion;
@@ -784,35 +765,13 @@ void ajuste_automatico(void) {
 	}
 }
 
-void prueba_rapida(void) {
-	correccion_avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
-	ejecutarGiro(izquierda);
-	correccion_avanzar();
-	while (1)
-		;
-}
+
 void prueba_avanzar(void) {
 	avanzar(); //codigo sencillo para configurar los margenes del ADC y verificacion de las ruedas y pilas
 //	ejecutarGiro(izquierda);
 //	ejecutarGiro(adelante);
 
 	;
-}
-
-bool verificar_sensor(void) {
-	static GPIO_PinState ultima_lectura_valida = GPIO_PIN_SET;
-	GPIO_PinState lectura1, lectura2;
-	bool pedido = false;
-	lectura1 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
-	if (lectura1 != ultima_lectura_valida) {
-		HAL_Delay(tiempo_rebotes);
-		lectura2 = HAL_GPIO_ReadPin(sensor_linea_GPIO_Port, sensor_linea_Pin);
-		if (lectura2 == lectura1)
-			ultima_lectura_valida = lectura2;
-		if (ultima_lectura_valida == GPIO_PIN_RESET)
-			pedido = true;
-	}
-	return pedido;
 }
 
 void programa_principal(void) {
@@ -842,7 +801,15 @@ void programa_principal(void) {
 		casilla_n = calculo_minimo_peso(peso, pared, ubicacion, orientacion_actual); //calcula la casilla a la que hay q ir
 		envio_casilla_n(casilla_n);
 		orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
-		giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+		if (ubicacion ==15){
+					if (orientacion_actual == norte){
+						orientacion_futura = sur;
+					}
+					if (orientacion_actual == oeste){
+						orientacion_futura = este;
+					}
+				}
+		giro = obtenerGiro(orientacion_actual, orientacion_futura,ubicacion); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 		if (ubicacion != 15) {
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
 		}
@@ -872,7 +839,7 @@ void programa_principal(void) {
 			envio_casilla_n(casilla_n);
 			//	envio_contador(contador_aux);
 			orientacion_futura = obtener_orientacion_futura(ubicacion, casilla_n); //obtiene a la orientacion a la que hay que ir con la ubicacion actual y casilla n
-			giro = obtenerGiro(orientacion_actual, orientacion_futura); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
+			giro = obtenerGiro(orientacion_actual, orientacion_futura,ubicacion); //con la orientacion futura (orientación q quiero) y la orientacion actual que giro debo realizar
 			orientacion_actual = orientacion_futura;  //actualizo la orientación
 			if (contador_giros > 0) {
 				mini_retroceso();
@@ -894,16 +861,7 @@ void programa_principal(void) {
 		flag_correcion = 0;
 	}
 }
-void error(void) {      //CUANDO HAY ERROR RETROCEDE INFINITAMENTE
-	HAL_GPIO_WritePin(m1_izquierda_GPIO_Port, m1_izquierda_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(m0_izquierda_GPIO_Port, m0_izquierda_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(m1_derecha_GPIO_Port, m1_derecha_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(m0_derecha_GPIO_Port, m0_derecha_Pin, GPIO_PIN_RESET);
-	TIM3->CCR3 = v_media_izq; // rueda a velocidad media (condigurable)
-	TIM3->CCR4 = v_media_der; // rueda a velocidad media
-	while (1)
-		;
-}
+
 
 uint8_t obtener_orientacion_futura(uint8_t ubicacion, uint8_t casilla_n) { // Devuelve la dirección hacia donde hay que ir según la diferencia entre casillas
 	if (casilla_n == ubicacion + 1)
@@ -918,7 +876,7 @@ uint8_t obtener_orientacion_futura(uint8_t ubicacion, uint8_t casilla_n) { // De
 	return 100; // Movimiento no válido (no adyacente o fuera del tablero)
 }
 
-uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_futura) { // Calcula el giro que debe hacer el autito para pasar de su orientación actual a la deseada
+uint8_t obtenerGiro(uint8_t orientacion_actual, uint8_t orientacion_futura,uint8_t ubicacion) { // Calcula el giro que debe hacer el autito para pasar de su orientación actual a la deseada
 	int diferencia = (orientacion_futura - orientacion_actual + 4) % 4; //el %4 se queda con el resto de la divsion por 4
 	if (ubicacion == 15) {
 		return adelante;
